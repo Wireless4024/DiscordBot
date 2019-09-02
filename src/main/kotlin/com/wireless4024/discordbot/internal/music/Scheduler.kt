@@ -4,18 +4,18 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.concurrent.BlockingDeque
 import java.util.concurrent.LinkedBlockingDeque
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-class Scheduler(
-		private val player: AudioPlayer,
-		private val executorService: ScheduledExecutorService
-) : AudioEventAdapter() {
+class Scheduler(private val player: AudioPlayer,
+                private val parent: Controller) : AudioEventAdapter() {
 
 	private val queue: BlockingDeque<AudioTrack>
 	private val boxMessage: AtomicReference<Message>
@@ -28,7 +28,9 @@ class Scheduler(
 	}
 
 	fun addToQueue(vararg audioTrack: AudioTrack) {
-		audioTrack.forEach { track -> queue.addLast(track) }
+		for (track in audioTrack)
+			queue.addLast(track)
+
 		startNextTrack(true)
 	}
 
@@ -44,12 +46,14 @@ class Scheduler(
 		startNextTrack(false)
 	}
 
+	fun size() = queue.size
+
 	/**
 	 * skip current track
 	 */
-	fun skip() {
-		startNextTrack(false)
-	}
+	fun skip(): String? = startNextTrack(false)
+
+	fun clear() = queue.clear()
 
 	val queues
 		get() = queue.toTypedArray()
@@ -57,26 +61,32 @@ class Scheduler(
 	val queueDuation
 		get() = kotlin.run {
 			var duration = 0L
-			queue.forEach { a ->
+			for (a in queue)
 				duration += a.duration
-			}
 			duration
 		}
 
-	fun repeat() {
-		repeat.set(repeat.get())
-	}
+	fun repeat() = repeat.set(repeat.get())
 
-	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null) {
+	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
 		if (!repeat.get() || lastTrack == null) {
 			if (queue.first != null) {
 				if (!player.startTrack(queue.first, noInterrupt))
-					queue.addFirst(queue.pollFirst()!!)
+					queue.addFirst(queue.first)
+				queue.removeFirst()
 			} else {
 				player.stopTrack()
+				runBlocking {
+					launch {
+						delay(30000)
+						if (queue.first == null)
+							parent.leave()
+					}
+				}
 				// messageDispatcher.sendMessage("Queue finished.")
 			}
 		} else player.startTrack(lastTrack, true)
+		return player.playingTrack.info.title
 	}
 
 	override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
@@ -96,7 +106,6 @@ class Scheduler(
 		// messageDispatcher.sendMessage(String.format("Track %s got stuck, skipping.", track.info.title))
 
 		startNextTrack(false)
-
 	}
 
 	override fun onPlayerResume(player: AudioPlayer?) {
