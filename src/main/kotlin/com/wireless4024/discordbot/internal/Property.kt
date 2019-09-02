@@ -5,12 +5,25 @@ import net.dv8tion.jda.api.entities.Member
 
 interface Property {
 	companion object {
+		/* @formatter:off */
+		@JvmStatic
 		val TOKEN = ""
+		@JvmStatic
+		val YTTOKEN = ""
+		@JvmStatic
 		val LOGGER_NAME = "DiscordBot"
+		@JvmStatic
 		val DEV_LIST = listOf(298273616704045057L)
+		@JvmStatic
+		val BASE_SLEEP_DELAY: Long = 3
+		@JvmStatic
+		val BASE_SLEEP_DELAY_MILLI = BASE_SLEEP_DELAY * 1000L
+		@JvmStatic
 		val PREFIX = "--"
+		@JvmStatic
 		val Expressions = Expressions()
-		val Commands = CommandPool()
+		val Commands: CommandPool by lazyOf(CommandPool())
+		/* @formatter:on */
 
 		interface Permission {
 			companion object {
@@ -31,6 +44,7 @@ interface Property {
 							permission and ADMINISTRATOR ->
 								user.isOwner || user.hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)
 							permission and OWNER         -> user.isOwner
+							permission and DEV           -> user.idLong in DEV_LIST
 							else                         -> false
 						}
 					}
