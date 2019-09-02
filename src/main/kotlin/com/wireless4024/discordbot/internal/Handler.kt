@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.ChannelType.TEXT
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.util.concurrent.Callable
+import java.util.concurrent.TimeUnit.SECONDS
 
 class Handler : ListenerAdapter() {
 	private fun Member.getFullName(): String {
@@ -23,11 +25,11 @@ class Handler : ListenerAdapter() {
 				val messageText = message.contentDisplay.replace(Regex("\\s+"), " ")
 				Utils.log("[${message.member!!.getFullName()}] : $messageText", deep = 2)
 				if (FastFunction.startWith(messageText, '=')) {
-					event.channel.sendThenDelete(Property.Expressions.evalToString(messageText.substring(1)))
-					GlobalScope.launch {
-						delay(Property.BASE_SLEEP_DELAY_MILLI)
-						event.message.delete().queue()
-					}
+					val number = Utils.execute(5,
+					                           SECONDS,
+					                           Callable { Property.Expressions.evalToString(messageText.substring(1)) })
+					             ?: "Execution timeout"
+					MessageEvent(event).reply(number)
 				}
 				if (messageText.startsWith(Property.PREFIX)) {
 					ICommandBase.invokeCommand(
