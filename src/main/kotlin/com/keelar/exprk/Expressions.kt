@@ -375,7 +375,11 @@ class Expressions {
 	}
 
 	fun evalToString(expression: String): String {
-		return eval(expression).toEngineeringString()
+		return try {
+			eval(expression).round(evaluator.context).toEngineeringString()
+		} catch (e: Throwable) {
+			e.cause?.message ?: e.message ?: ""
+		}
 	}
 
 	private fun parse(expression: String): Expr {
