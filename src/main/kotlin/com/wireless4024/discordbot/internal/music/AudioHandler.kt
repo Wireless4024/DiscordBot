@@ -9,10 +9,7 @@ import java.nio.ByteBuffer
 class AudioHandler(private val audioPlayer: AudioPlayer) : AudioSendHandler {
 	private var lastFrame: AudioFrame? = null
 
-	override fun canProvide(): Boolean {
-		lastFrame = audioPlayer.provide()
-		return lastFrame != null
-	}
+	override fun canProvide(): Boolean = audioPlayer.provide().also { lastFrame = it } != null
 
 	override fun provide20MsAudio(): ByteBuffer? =
 			if (lastFrame == null || lastFrame!!.data == null) null else ByteBuffer.wrap(lastFrame!!.data)
