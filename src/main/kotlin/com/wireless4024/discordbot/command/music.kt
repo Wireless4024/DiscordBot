@@ -1,19 +1,61 @@
 package com.wireless4024.discordbot.command
 
-import com.wireless4024.discordbot.internal.ICommandBase
-import com.wireless4024.discordbot.internal.MessageEvent
+import com.wireless4024.discordbot.internal.*
+import com.wireless4024.discordbot.internal.Property.Companion.Permission
+import net.dv8tion.jda.api.entities.MessageEmbed
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 
-class music:ICommandBase {
-	override fun invoke(args: CommandLine, event: MessageEvent): String {
-		TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+class music : ICommandBase {
+	override fun invoke(args: CommandLine, event: MessageEvent): Any {
+		return when (args[0]) {
+			"play", "p"  -> p(args.dropFirst(), event)
+			"join", "j"  -> j(args.dropFirst(), event)
+			"leave", "l" -> leave(args.dropFirst(), event)
+			"skip", "s"  -> s(args.dropFirst(), event)
+			"vol", "v"   -> v(args.dropFirst(), event)
+			"queue", "q" -> queue(args.dropFirst(), event)
+			else         -> ""
+		}
 	}
 
-	override val options: List<Option>
-		get() = TODO(
-				"not implemented") //To change initializer of created properties use File | Settings | File Templates.
-	override val permission: Int
-		get() = TODO(
-				"not implemented") //To change initializer of created properties use File | Settings | File Templates.
+	@Command
+	fun p(args: CommandLine, event: MessageEvent): String =
+			event.ensureVoiceConnected { event.musicController.queue(args, event);"" }
+
+	@Command
+	fun j(args: CommandLine, event: MessageEvent): String =
+			event.ensureVoiceConnected { "connecting to '${event.musicController.join(event)}'" }
+
+	@Command
+	fun s(args: CommandLine, event: MessageEvent): String {
+		event.ensureVoiceConnected()
+		return "now playing ${event.musicController.skip(event)}"
+	}
+
+	@Command
+	fun v(args: CommandLine, event: MessageEvent): String {
+		event.ensureVoiceConnected()
+		return "volume is ${event.musicController.volume(args[0]?.toIntOrNull() ?: 0)}"
+	}
+
+	@Command
+	fun leave(args: CommandLine, event: MessageEvent): String {
+		event.ensureVoiceConnected()
+		return "I'm leaving ${event.musicController.leave(event)}"
+	}
+
+	@Command
+	fun queue(args: CommandLine, event: MessageEvent): MessageEmbed {
+		return event.musicController.listAsEmbed(event, 1)
+	}
+
+	@Command
+	fun pause(args: CommandLine, event: MessageEvent): String {
+		return if (event.musicController.pause()) "paused " else "resume"
+	}
+
+	override val options: List<Option> = listOf()
+
+	override val permission: Int = Permission.ANY
 }
