@@ -25,7 +25,7 @@ class clear : ICommandBase {
 				event.ch.sendThenDelete("deleted $cnt messages")
 				running.remove(event.ch.idLong)
 			}
-		else event.ch.iterableHistory.limit(args.getOptionValue("l").toIntOrNull() ?: 1 + 1)
+		else event.ch.iterableHistory.limit((args.getOptionValue("l").toIntOrNull() ?: 1) + 1)
 				.complete()
 				.drop(1)
 				.forEach { m -> m.delete().complete().also { ++cnt } }.let {
