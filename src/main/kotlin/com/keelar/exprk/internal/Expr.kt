@@ -9,8 +9,7 @@ internal sealed class Expr {
 }
 
 internal class AssignExpr(val name: Token,
-                          val value: Expr
-) : Expr() {
+                          val value: Expr) : Expr() {
 
 	override fun <R> accept(visitor: ExprVisitor<R>): R {
 		return visitor.visitAssignExpr(this)
@@ -20,8 +19,7 @@ internal class AssignExpr(val name: Token,
 
 internal class LogicalExpr(val left: Expr,
                            val operator: Token,
-                           val right: Expr
-) : Expr() {
+                           val right: Expr) : Expr() {
 
 	override fun <R> accept(visitor: ExprVisitor<R>): R {
 		return visitor.visitLogicalExpr(this)
@@ -31,8 +29,7 @@ internal class LogicalExpr(val left: Expr,
 
 internal class BinaryExpr(val left: Expr,
                           val operator: Token,
-                          val right: Expr
-) : Expr() {
+                          val right: Expr) : Expr() {
 
 	override fun <R> accept(visitor: ExprVisitor<R>): R {
 		return visitor.visitBinaryExpr(this)
@@ -41,8 +38,7 @@ internal class BinaryExpr(val left: Expr,
 }
 
 internal class UnaryExpr(val operator: Token,
-                         val right: Expr
-) : Expr() {
+                         val right: Expr) : Expr() {
 
 	override fun <R> accept(visitor: ExprVisitor<R>): R {
 		return visitor.visitUnaryExpr(this)
