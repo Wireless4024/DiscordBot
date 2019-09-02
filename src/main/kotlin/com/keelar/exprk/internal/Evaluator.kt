@@ -6,9 +6,10 @@ import com.keelar.exprk.internal.TokenType.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
+import java.math.RoundingMode
 
 internal class Evaluator : ExprVisitor<BigDecimal> {
-	internal var context: MathContext = MathContext(128)
+	internal var context: MathContext = MathContext(128, RoundingMode.FLOOR)
 
 	private val variables: LinkedHashMap<String, BigDecimal> = linkedMapOf()
 	private val functions: MutableMap<String, Function> = mutableMapOf()
