@@ -1,55 +1,34 @@
 package com.wireless4024.discordbot.internal.music
 
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
-import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.local.LocalAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.wireless4024.discordbot.internal.CommandError
 import com.wireless4024.discordbot.internal.ConfigurationCache
 import com.wireless4024.discordbot.internal.MessageEvent
 import com.wireless4024.discordbot.internal.Utils
-import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.managers.AudioManager
-import java.util.concurrent.atomic.AtomicReference
+import org.apache.commons.cli.CommandLine
+import java.awt.Color
 import kotlin.math.max
 
-class Controller(
-		val state: GuildContext,
-		val parent: ConfigurationCache,
-		private var player: AudioPlayer = DefaultAudioPlayer.createPlayer(),
-		private var outputChannel: AtomicReference<TextChannel>,
-		private var scheduler: Scheduler
-) {
-
-	companion object {
-		val DefaultAudioPlayer = DefaultAudioPlayerManager().also {
-			it.registerSourceManager(YoutubeAudioSourceManager())
-			it.registerSourceManager(SoundCloudAudioSourceManager())
-			it.registerSourceManager(BandcampAudioSourceManager())
-			it.registerSourceManager(VimeoAudioSourceManager())
-			it.registerSourceManager(TwitchStreamAudioSourceManager())
-			it.registerSourceManager(BeamAudioSourceManager())
-			it.registerSourceManager(HttpAudioSourceManager())
-			it.registerSourceManager(LocalAudioSourceManager())
-		}
-	}
+class Controller(val parent: ConfigurationCache) {
+	private var player: AudioPlayer
+	private var manager: AudioPlayerManager = parent.audioPlayerManager
+	private val scheduler: Scheduler
 
 	init {
-		this.player = DefaultAudioPlayer.createPlayer()
+		player = manager.createPlayer()
+		parent.audioSendHandler = AudioHandler(player)
 
-		parent.guild.audioManager.sendingHandler = AudioHandler(player)
-		outputChannel = AtomicReference()
-		scheduler = Scheduler(player, Utils.scheduleexecutor)
+		scheduler = Scheduler(player, this)
 		player.addListener(scheduler)
 	}
 
@@ -57,49 +36,76 @@ class Controller(
 		//addTrack(message, identifier, false)
 	}
 
-	private fun now(message: Message, identifier: String) {
+	fun now(msgEV: MessageEvent) {
 		//addTrack(message, identifier, true)
-	}
 
-	private fun play(msgEV: MessageEvent) {
-		//addTrack(message, identifier, true)
 		connect(parent.audioManager, msgEV.member.voiceState?.channel)
 	}
 
-	private fun skip(msgEV: MessageEvent) {
+	fun queue(args: CommandLine, msgEV: MessageEvent) {
+		val text = args.args.joinToString(" ").trim()
+		if (Utils.urlExisted(text))
+			addTrack(text, msgEV)
+		else
+			addTrack("ytsearch:$text", msgEV)
+	}
+
+	fun join(msgEV: MessageEvent) = connect(parent.audioManager, msgEV.member.voiceState?.channel, true)
+
+	fun leave(msgEV: MessageEvent? = null) =
+			with(parent.audioManager) { (this.connectedChannel?.name).also { scheduler.clear();this.closeAudioConnection() } }
+			?: throw CommandError("wait dude I i can't leave I MOST BE IN VOICE CHANNEL TO USE THIS COMMAND!")
+
+	fun skip(msgEV: MessageEvent) {
 		scheduler.skip()
 	}
 
+	fun volume(vol: Int): Int {
+		if (vol <= 0)
+			player.volume += vol
+		else
+			player.volume = vol
+		return player.volume
+	}
+
+	fun listAsEmbed(msgEV: MessageEvent, page: Int = 1): MessageEmbed {
+		val queue = scheduler.queues
+		return EmbedBuilder().also {
+			it.setTitle("Song queue | page $page")
+			it.setDescription("${queue.size} song | duration ${Utils.toReadableFormatTime(scheduler.queueDuation)}")
+			it.setColor(Color.GREEN)
+			for (i in queue)
+				it.addField(i.info.title, "duration : " + Utils.toReadableFormatTime(i.duration), false)
+		}.build()
+	}
+
 	private fun forward(message: Message, duration: Int) {
-		thisTrack {
+		playing {
 			it.position = it.position + duration
 		}
 	}
 
 	private fun back(message: Message, duration: Int) {
-		thisTrack {
+		playing {
 			it.position = max(0, it.position - duration)
 		}
 	}
 
-	private fun pause() {
-		player.isPaused = !player.isPaused
+	fun pause(): Boolean {
+		return player.isPaused.also { player.isPaused = !it }
 	}
 
-	private fun duration(message: Message) {
-		thisTrack {
-			message.channel.sendMessage("Duration is " + it.duration).queue()
-		}
-	}
+	val duration
+		get() = playing { it }?.duration ?: 0
 
-	private fun seek(message: Message, position: Long) {
-		thisTrack {
+	fun seek(message: Message, position: Long) {
+		playing {
 			it.position = position
 		}
 	}
 
 	private fun pos(message: Message) {
-		thisTrack {
+		playing {
 			message.channel.sendMessage("Position is " + it.position).queue()
 		}
 	}
@@ -108,60 +114,46 @@ class Controller(
 		parent.closeAudioConnection()
 	}
 
-	/*private fun addTrack(message: Message, identifier: String, now: Boolean) {
-		outputChannel.set(message.channel as TextChannel)
-		manager.loadItemOrdered(this, identifier, object : AudioLoadResultHandler {
+	private fun addTrack(url: String, event: MessageEvent) {
+		manager.loadItemOrdered(this, url, object : AudioLoadResultHandler {
 			override fun trackLoaded(track: AudioTrack) {
-				connectToFirstVoiceChannel(guild.getAudioManager())
-				message.channel.sendMessage("Starting now: " + track.info.title + " (length " + track.duration + ")")
-					.queue()
-				if (now) {
-					scheduler.playNow(track, true)
-				} else {
-					scheduler.addToQueue(track)
-				}
+				connect(parent.audioManager, event.member.voiceState?.channel)
+
+				event.reply("Starting now: " + track.info.title + " (length " + track.duration + ")")
+				scheduler.addToQueue(track)
 			}
 
 			override fun playlistLoaded(playlist: AudioPlaylist) {
+				connect(parent.audioManager, event.member.voiceState?.channel)
+
 				val tracks = playlist.tracks
-				message.channel.sendMessage("Loaded playlist: " + playlist.name + " (" + tracks.size + ")").queue()
-				connectToFirstVoiceChannel(guild.getAudioManager())
-				var selected: AudioTrack? = playlist.selectedTrack
-				if (selected != null) {
-					message.channel.sendMessage("Selected track from playlist: " + selected.info.title).queue()
-				} else {
-					selected = tracks[0]
-					message.channel.sendMessage("Added first track from playlist: " + selected!!.info.title).queue()
-				}
-				if (now) {
-					scheduler.playNow(selected, true)
-				} else {
-					scheduler.addToQueue(selected)
-				}
-				for (i in 0 until Math.min(10, playlist.tracks.size)) {
-					if (tracks[i] !== selected) {
-						scheduler.addToQueue(tracks[i])
-					}
+				var len = 0
+				tracks.slice(
+						(if (playlist.selectedTrack == null) 0 else tracks.indexOf(
+								playlist.selectedTrack
+						)) until tracks.size
+				).forEach { ++len;scheduler.addToQueue(it) }.also {
+					event.reply = "added $len tracks"
 				}
 			}
 
 			override fun noMatches() {
-				message.channel.sendMessage("Nothing found for $identifier").queue()
+				event.reply("Nothing found for $url")
 			}
 
 			override fun loadFailed(throwable: FriendlyException) {
-				message.channel.sendMessage("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")")
-					.queue()
+				event.reply("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")")
 			}
 		})
-	}*/
+	}
 
-	private fun thisTrack(operation: ((AudioTrack) -> Unit)) = with(player.playingTrack) { operation(this) }
+	private fun <T> playing(operation: ((AudioTrack) -> T?)): T? = with(player.playingTrack) { operation(this) }
 
-	private fun connect(audioManager: AudioManager, voiceChannel: VoiceChannel?) {
+	private fun connect(audioManager: AudioManager, voiceChannel: VoiceChannel?, force: Boolean = false): String {
 		if (voiceChannel == null)
 			throw CommandError("You must be in voice channel to use command")
-		if (!audioManager.isConnected && !audioManager.isAttemptingToConnect)
+		if (force || !audioManager.isConnected && !audioManager.isAttemptingToConnect)
 			audioManager.openAudioConnection(voiceChannel)
+		return voiceChannel.name
 	}
 }
