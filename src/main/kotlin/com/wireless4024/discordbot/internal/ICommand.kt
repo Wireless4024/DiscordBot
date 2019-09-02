@@ -6,7 +6,7 @@ import java.io.PrintWriter
 
 interface ICommandBase {
 	companion object {
-		fun invokeCommand(cm: ICommandBase?, args: String, event: MessageEvent) {
+		fun invokeCommand(cm: Invokable?, args: String, event: MessageEvent) {
 			if (cm == null) {
 				if (event.ev == null)
 					println("invalid command")
@@ -24,10 +24,9 @@ interface ICommandBase {
 						cm.parse(
 								args.replace(Regex("\\s+"), " ")
 										.split(" ").toTypedArray()
-						)
-						, event
+						), event
 				)
-				if (msg.isNotEmpty())
+				if (!msg.isUnit())
 					event.reply = msg
 				else
 					Utils.log("command '${cm.name()}' return nothing..")
@@ -51,7 +50,7 @@ interface ICommandBase {
 	}
 
 	@Throws
-	operator fun invoke(args: CommandLine, event: MessageEvent): String
+	operator fun invoke(args: CommandLine, event: MessageEvent): Any
 
 	fun name(): String = javaClass.simpleName
 
@@ -65,3 +64,5 @@ interface ICommandBase {
 		return DefaultParser().parse(genOptions(), str)
 	}
 }
+
+annotation class Command(val permission: Int = 0)
