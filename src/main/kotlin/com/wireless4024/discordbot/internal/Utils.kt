@@ -5,8 +5,7 @@ import okhttp3.OkHttpClient
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadFactory
+import java.util.concurrent.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
@@ -29,6 +28,20 @@ class Utils {
 		)
 		@JvmStatic
 		val HAS_HTTP = Pattern.compile("^http")
+
+		@JvmStatic
+		fun <T> execute(timeout: Long, unit: TimeUnit, callback: Callable<T?>): T? {
+			val ex = Executors.newSingleThreadExecutor()
+			return try {
+				ex.submit(callback).get(timeout, unit)
+			} catch (e: TimeoutException) {
+				null
+			} catch (e: Exception) {
+				throw java.lang.RuntimeException(e)
+			} finally {
+				ex.shutdown()
+			}
+		}
 
 		@JvmStatic
 		fun log(msg: Any?, level: Level = Level.INFO, deep: Int = 0) {
