@@ -1,11 +1,9 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version "1.3.41"
+	id 'org.jetbrains.kotlin.jvm' version "1.3.50"
 }
 
 // java discord library versions
 def jda = '4.0.0_44'
-// gson version
-def gson = '2.8.5'
 // lava player version
 def lava = '1.3.20'
 // big-math version
@@ -26,13 +24,33 @@ repositories {
 }
 
 dependencies {
+	/* JDA core of this project */
 	implementation "net.dv8tion:JDA:${jda}"
-	implementation "com.google.code.gson:gson:${gson}"
+	/* music player lib */
 	implementation "com.sedmelluq:lavaplayer:${lava}"
+	implementation "com.sedmelluq:jda-nas:1.1.0"
+	/* BigMath lib for calculation */
 	implementation "ch.obermuhlner:big-math:${bigmath}"
+	/* JVM's reflections */
 	implementation "org.reflections:reflections:${reflection}"
+	implementation "com.google.guava:guava:28.1-jre"
+	/* cli parser */
 	implementation "commons-cli:commons-cli:${ccli}"
-	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+	/* mongodb driver */
+	implementation "org.litote.kmongo:kmongo-coroutine:3.11.0"
+	/* youtube api v3 */
+	implementation "com.google.apis:google-api-services-youtube:v3-rev212-1.25.0"
+
+	/* Kotlin Libs */
+	/*
+	implementation "org.jetbrains.kotlin:kotlin-script-util:1.3.50"
+	implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.50"
+	implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.3.50"
+	implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.3.50"
+	implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.50"*/
+	implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
+	implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0"
+
 	testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
