@@ -31,7 +31,8 @@ class music : ICommandBase {
 	@Command
 	fun s(args: CommandLine, event: MessageEvent): String {
 		event.ensureVoiceConnected()
-		return "now playing ${event.musicController.skip(event)}"
+		val playing = event.musicController.skip(event)
+		return if (playing != null) "now playing $playing" else "player stopped"
 	}
 
 	@Command

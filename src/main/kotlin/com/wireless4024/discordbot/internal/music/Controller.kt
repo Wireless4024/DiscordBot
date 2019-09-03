@@ -56,9 +56,7 @@ class Controller(val parent: ConfigurationCache) {
 			with(parent.audioManager) { (this.connectedChannel?.name).also { scheduler.clear();this.closeAudioConnection() } }
 			?: throw CommandError("wait dude I i can't leave I MOST BE IN VOICE CHANNEL TO USE THIS COMMAND!")
 
-	fun skip(msgEV: MessageEvent) {
-		scheduler.skip()
-	}
+	fun skip(msgEV: MessageEvent) = scheduler.skip()
 
 	fun clear() = scheduler.clear()
 

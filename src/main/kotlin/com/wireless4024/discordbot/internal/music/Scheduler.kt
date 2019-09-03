@@ -4,9 +4,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.concurrent.BlockingDeque
@@ -51,7 +51,7 @@ class Scheduler(private val player: AudioPlayer,
 	/**
 	 * skip current track
 	 */
-	fun skip(): String? = startNextTrack(false)
+	fun skip() = startNextTrack(false)
 
 	fun clear() = queue.clear()
 
@@ -68,25 +68,23 @@ class Scheduler(private val player: AudioPlayer,
 
 	fun repeat() = repeat.set(repeat.get())
 
-	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String {
+	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
 		if (!repeat.get() || lastTrack == null) {
-			if (queue.first != null) {
+			if (queue.isNotEmpty() && queue.first != null) {
 				if (!player.startTrack(queue.first, noInterrupt))
 					queue.addFirst(queue.first)
 				queue.removeFirst()
 			} else {
 				player.stopTrack()
-				runBlocking {
-					launch {
-						delay(30000)
-						if (queue.first == null)
-							parent.leave()
-					}
+				GlobalScope.launch {
+					delay(30000)
+					if (queue.first == null)
+						parent.leave()
 				}
 				// messageDispatcher.sendMessage("Queue finished.")
 			}
 		} else player.startTrack(lastTrack, true)
-		return player.playingTrack.info.title
+		return player.playingTrack?.info?.title
 	}
 
 	override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
