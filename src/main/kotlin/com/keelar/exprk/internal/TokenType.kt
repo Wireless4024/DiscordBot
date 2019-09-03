@@ -7,6 +7,7 @@ internal enum class TokenType {
 	MINUS,
 	STAR,
 	SLASH,
+	DOUBLE_SLASH, // floor divide
 	MODULO,
 	EXPONENT,
 	ASSIGN,
@@ -21,6 +22,8 @@ internal enum class TokenType {
 	NAND,
 	NOR,
 	NXOR,
+	ROR, // rotate right
+	ROL, // rotate left
 
 	// Logical operators
 	EQUAL_EQUAL,

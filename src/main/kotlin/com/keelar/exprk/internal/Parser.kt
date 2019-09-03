@@ -114,6 +114,20 @@ internal class Parser(private val tokens: List<Token>) {
 			left = BinaryExpr(left, operator, right)
 		}
 
+		while (match(ROL)) {
+			val operator = previous()
+			val right = unary()
+
+			left = BinaryExpr(left, operator, right)
+		}
+
+		while (match(ROR)) {
+			val operator = previous()
+			val right = unary()
+
+			left = BinaryExpr(left, operator, right)
+		}
+
 		return left
 	}
 
@@ -153,7 +167,7 @@ internal class Parser(private val tokens: List<Token>) {
 	private fun multiplication(): Expr {
 		var left = unary()
 
-		while (match(STAR, SLASH, MODULO)) {
+		while (match(STAR, SLASH, MODULO, DOUBLE_SLASH)) {
 			val operator = previous()
 			val right = unary()
 

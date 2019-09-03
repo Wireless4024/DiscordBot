@@ -64,6 +64,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 			MINUS         -> left - right
 			STAR          -> left * right
 			SLASH         -> left.divide(right, context)
+			DOUBLE_SLASH  -> left.divide(right, context).round(MathContext(0, RoundingMode.FLOOR))
 			MODULO        -> left.remainder(right, context)
 			EXPONENT      -> left pow right
 			EQUAL_EQUAL   -> (left == right).toBigDecimal()
@@ -82,6 +83,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 			NAND          -> left nand right
 			NOR           -> left nor right
 			NXOR          -> left nxor right
+			ROL           -> left rol right
 
 			else          -> throw ExpressionException(
 					"Invalid binary operator '${expr.operator.lexeme}'"
@@ -125,10 +127,14 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 		val left = this.toBigInteger()
 		val length = left.bitLength()
 		val right = bright.toBigInteger().mod(BigInteger.valueOf(length.toLong()))
-		return BigDecimal(
-				left.shiftLeft(right.toInt())
-						.or(left.shiftRight(left.bitLength() - right.toInt())).ensureBit(length)
-		)
+		return BigDecimal(rotateLeft(left, right.toInt()))
+	}
+
+	fun rotateLeft(value: BigInteger, shift: Int): BigInteger? {
+		val bitSize = value.bitLength()
+		val topBits = value.shiftRight(bitSize - shift)
+		val mask = BigInteger.ZERO.setBit(bitSize).subtract(BigInteger.ONE)
+		return value.shiftLeft(shift).or(topBits).and(mask)
 	}
 
 	private fun BigInteger.ensureBit(bits: Int): BigInteger {
@@ -185,7 +191,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	}
 
 	private fun BigDecimal.isTruthy(): Boolean {
-		return this != BigDecimal.ZERO
+		return this.signum() != 0
 	}
 
 	private fun Boolean.toBigDecimal(): BigDecimal {
@@ -193,7 +199,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	}
 
 	private infix fun BigDecimal.pow(n: BigDecimal): BigDecimal {
-		return BigDecimalMath.pow(this, n, MathContext.DECIMAL128)
+		return BigDecimalMath.pow(this, n, context)
 	}
 
 }
