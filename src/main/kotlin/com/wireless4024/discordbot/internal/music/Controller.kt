@@ -47,7 +47,7 @@ class Controller(val parent: ConfigurationCache) {
 		if (Utils.urlExisted(text))
 			addTrack(text, msgEV)
 		else
-			addTrack(if (text.startsWith("ytsearch:")) text else "ytsearch:$text", msgEV, true)
+			addTrack(if (text.startsWith("ytsearch:")) text else "ytsearch:$text", msgEV, !text.startsWith("ytsearch:"))
 	}
 
 	fun join(msgEV: MessageEvent) = connect(parent.audioManager, msgEV.member.voiceState?.channel, true)
@@ -134,12 +134,13 @@ class Controller(val parent: ConfigurationCache) {
 
 				val tracks = playlist.tracks
 				var len = 0
+				var duration = 0L
 				tracks.slice(
-						(if (playlist.selectedTrack == null) 0 else tracks.indexOf(
-								playlist.selectedTrack
-						)) until tracks.size
-				).forEach { ++len;scheduler.addToQueue(it) }.also {
-					event.reply = "added $len tracks"
+					(if (playlist.selectedTrack == null) 0 else tracks.indexOf(
+						playlist.selectedTrack
+					)) until tracks.size
+				).forEach { ++len;duration += it.duration;scheduler.addToQueue(it) }.also {
+					event.reply = "added $len tracks duration ${Utils.toReadableFormatTime(duration)}"
 				}
 			}
 
