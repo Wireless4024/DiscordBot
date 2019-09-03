@@ -29,6 +29,8 @@ class Handler : ListenerAdapter() {
 					                           SECONDS,
 					                           Callable { Property.Expressions.evalToString(messageText.substring(1)) })
 					             ?: "Execution timeout"
+					if (number == "Execution timeout")
+						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
 				}
 				if (messageText.startsWith(Property.PREFIX)) {
