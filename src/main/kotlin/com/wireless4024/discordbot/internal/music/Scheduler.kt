@@ -78,7 +78,7 @@ class Scheduler(private val player: AudioPlayer,
 				player.stopTrack()
 				GlobalScope.launch {
 					delay(30000)
-					if (queue.isNotEmpty() && queue.first == null)
+					if (queue.isEmpty() || queue.first == null)
 						parent.leave()
 				}
 				// messageDispatcher.sendMessage("Queue finished.")
