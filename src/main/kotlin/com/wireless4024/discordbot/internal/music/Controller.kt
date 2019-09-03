@@ -47,7 +47,7 @@ class Controller(val parent: ConfigurationCache) {
 		if (Utils.urlExisted(text))
 			addTrack(text, msgEV)
 		else
-			addTrack("ytsearch:$text", msgEV)
+			addTrack(if (text.startsWith("ytsearch:")) text else "ytsearch:$text", msgEV, true)
 	}
 
 	fun join(msgEV: MessageEvent) = connect(parent.audioManager, msgEV.member.voiceState?.channel, true)
@@ -72,7 +72,7 @@ class Controller(val parent: ConfigurationCache) {
 		val queue = scheduler.queues
 		return EmbedBuilder().also {
 			it.setTitle("Song queue | page $page")
-			it.setDescription("${queue.size} song | duration ${Utils.toReadableFormatTime(scheduler.queueDuation)}")
+			it.setDescription("${queue.size} song in queue | duration ${Utils.toReadableFormatTime(scheduler.queueDuation)} remaining")
 			it.setColor(Color.GREEN)
 			for (i in queue)
 				it.addField(i.info.title, "duration : " + Utils.toReadableFormatTime(i.duration), false)
@@ -114,17 +114,23 @@ class Controller(val parent: ConfigurationCache) {
 		parent.closeAudioConnection()
 	}
 
-	private fun addTrack(url: String, event: MessageEvent) {
+	/**
+	 * @param pickfirst Boolean if search result ticked as playlist should player add song as single track
+	 */
+	private fun addTrack(url: String, event: MessageEvent, pickfirst: Boolean = false) {
 		manager.loadItemOrdered(this, url, object : AudioLoadResultHandler {
 			override fun trackLoaded(track: AudioTrack) {
 				connect(parent.audioManager, event.member.voiceState?.channel)
 
-				event.reply("Starting now: " + track.info.title + " (length " + track.duration + ")")
+				event.reply("Starting now: ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)})")
 				scheduler.addToQueue(track)
 			}
 
 			override fun playlistLoaded(playlist: AudioPlaylist) {
 				connect(parent.audioManager, event.member.voiceState?.channel)
+
+				if (pickfirst)
+					return this.trackLoaded(playlist.selectedTrack ?: playlist.tracks[0])
 
 				val tracks = playlist.tracks
 				var len = 0
