@@ -32,6 +32,10 @@ class Handler : ListenerAdapter() {
 					if (number == "Execution timeout")
 						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
+                    GlobalScope.launch {
+                        delay(Property.BASE_SLEEP_DELAY_MILLI)
+                        event.message.delete().queue()
+                    }
 				}
 				if (messageText.startsWith(Property.PREFIX)) {
 					ICommandBase.invokeCommand(
