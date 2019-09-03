@@ -68,7 +68,7 @@ class Scheduler(private val player: AudioPlayer,
 
 	fun repeat() = repeat.set(repeat.get())
 
-	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
+	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String {
 		if (!repeat.get() || lastTrack == null) {
 			if (queue.first != null) {
 				if (!player.startTrack(queue.first, noInterrupt))
