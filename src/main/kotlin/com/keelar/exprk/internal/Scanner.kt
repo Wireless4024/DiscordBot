@@ -33,7 +33,7 @@ internal class Scanner(
 		start = current
 		val c = advance()
 
-		when (c) {
+		when (c.toLowerCase()) {
 			' ',
 			'\r',
 			'\t' -> {
@@ -42,9 +42,16 @@ internal class Scanner(
 			'+'  -> addToken(PLUS)
 			'-'  -> addToken(MINUS)
 			'*'  -> if (match('*')) addToken(EXPONENT, "**") else addToken(STAR)
-			'/'  -> addToken(SLASH)
+			'/'  -> if (match('/')) addToken(DOUBLE_SLASH, "//") else addToken(SLASH)
 			'%'  -> addToken(MODULO)
 			'^'  -> addToken(XOR, "^")
+			'r'  -> if (match('o'))
+				when {
+					match('r') -> addToken(ROR, "ror")
+					match('l') -> addToken(ROL, "rol")
+					else       -> invalidToken(c)
+				}
+			else invalidToken(c)
 			'~'  -> when {
 				match('&') -> addToken(NAND, "~&")
 				match('|') -> addToken(NOR, "~|")
