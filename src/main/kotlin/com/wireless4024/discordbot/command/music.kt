@@ -15,6 +15,7 @@ class music : ICommandBase {
 			"skip", "s"  -> s(args.dropFirst(), event)
 			"vol", "v"   -> v(args.dropFirst(), event)
 			"queue", "q" -> queue(args.dropFirst(), event)
+			"clear", "c" -> clear(args.dropFirst(), event)
 			else         -> ""
 		}
 	}
@@ -43,6 +44,12 @@ class music : ICommandBase {
 	fun leave(args: CommandLine, event: MessageEvent): String {
 		event.ensureVoiceConnected()
 		return "I'm leaving ${event.musicController.leave(event)}"
+	}
+
+	@Command
+	fun clear(args: CommandLine, event: MessageEvent): String {
+		event.musicController.clear()
+		return "cleared playlist"
 	}
 
 	@Command

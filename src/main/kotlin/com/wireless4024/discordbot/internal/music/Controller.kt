@@ -60,6 +60,8 @@ class Controller(val parent: ConfigurationCache) {
 		scheduler.skip()
 	}
 
+	fun clear() = scheduler.clear()
+
 	fun volume(vol: Int): Int {
 		if (vol <= 0)
 			player.volume += vol
