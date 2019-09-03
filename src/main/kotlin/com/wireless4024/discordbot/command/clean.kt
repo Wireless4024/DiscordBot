@@ -7,7 +7,7 @@ import com.wireless4024.discordbot.internal.sendThenDelete
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 
-class clear : ICommandBase {
+class clean : ICommandBase {
 	private val running = mutableListOf<Long>()
 	override val permission = Permission.ADMINISTRATOR
 	override val options: List<Option> =
