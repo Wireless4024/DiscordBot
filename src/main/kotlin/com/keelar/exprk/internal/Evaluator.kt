@@ -7,6 +7,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import java.math.RoundingMode.FLOOR
 
 internal class Evaluator : ExprVisitor<BigDecimal> {
 	internal var context: MathContext = MathContext(128, RoundingMode.FLOOR)
@@ -64,7 +65,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 			MINUS         -> left - right
 			STAR          -> left * right
 			SLASH         -> left.divide(right, context)
-			DOUBLE_SLASH  -> left.divide(right, context).round(MathContext(0, RoundingMode.FLOOR))
+			DOUBLE_SLASH  -> left.divide(right, context).setScale(0, FLOOR)
 			MODULO        -> left.remainder(right, context)
 			EXPONENT      -> left pow right
 			EQUAL_EQUAL   -> (left == right).toBigDecimal()
