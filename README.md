@@ -1,3 +1,3 @@
 # DiscordBot
 
-discord bot on kotlin
+thanks [ExprK](https://github.com/Keelar/ExprK) for calculation
