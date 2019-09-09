@@ -9,17 +9,18 @@ import org.apache.commons.cli.Option
 class music : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
 		return when (args[0]) {
-			"play", "p"   -> p(args.dropFirst(), event)
-			"join", "j"   -> j(args.dropFirst(), event)
-			"leave", "l"  -> leave(args.dropFirst(), event)
-			"skip", "s"   -> s(args.dropFirst(), event)
-			"vol", "v"    -> v(args.dropFirst(), event)
-			"queue", "q"  -> queue(args.dropFirst(), event)
-			"clear", "c"  -> clear(args.dropFirst(), event)
-			"pause"       -> pause(args.dropFirst(), event)
-			"repeat", "r" -> repeat(args.dropFirst(), event)
-			"remove", "d" -> remove(args.dropFirst(), event)
-			else          -> ""
+			"play", "p"      -> p(args.dropFirst(), event)
+			"join", "j"      -> j(args.dropFirst(), event)
+			"leave", "l"     -> leave(args.dropFirst(), event)
+			"skip", "s"      -> s(args.dropFirst(), event)
+			"vol", "v"       -> v(args.dropFirst(), event)
+			"queue", "q"     -> queue(args.dropFirst(), event)
+			"clear", "c"     -> clear(args.dropFirst(), event)
+			"pause"          -> pause(args.dropFirst(), event)
+			"repeat", "r"    -> repeat(args.dropFirst(), event)
+			"remove", "d"    -> remove(args.dropFirst(), event)
+			"previuos", "pv" -> previous(args.dropFirst(), event)
+			else             -> ""
 		}
 	}
 
@@ -77,6 +78,11 @@ class music : ICommandBase {
 	fun remove(args: CommandLine, event: MessageEvent): String {
 		return "removed track : ${event.musicController.removeQueue(args.args.getOrNull(0)?.toIntOrNull()
 		                                                            ?: throw CommandError("invalid index")).info.title}"
+	}
+
+	@Command
+	fun previous(args: CommandLine, event: MessageEvent): String {
+		return event.musicController.previous()?.let { "now playing : $it" } ?: ""
 	}
 
 	override val options: List<Option> = listOf()
