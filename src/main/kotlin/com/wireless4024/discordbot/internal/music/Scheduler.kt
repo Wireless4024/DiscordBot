@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import com.wireless4024.discordbot.internal.CommandError
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 class Scheduler(private val player: AudioPlayer,
                 private val parent: Controller) : AudioEventAdapter() {
 
-	private val queue: BlockingDeque<AudioTrack>
+	private var queue: BlockingDeque<AudioTrack>
 	private val boxMessage: AtomicReference<Message>
 	private val repeat: AtomicBoolean
 
@@ -51,7 +52,7 @@ class Scheduler(private val player: AudioPlayer,
 	/**
 	 * skip current track
 	 */
-	fun skip() = startNextTrack(false)
+	fun skip() = startNextTrack(false, player.playingTrack)
 
 	fun clear() = queue.clear()
 
@@ -66,7 +67,15 @@ class Scheduler(private val player: AudioPlayer,
 			duration
 		}
 
-	fun repeat() = repeat.set(repeat.get())
+	fun repeat() = !repeat.getAndSet(!repeat.get())
+
+	fun remove(pos: Int): AudioTrack {
+		if (pos < 1 || pos > queue.size)
+			throw CommandError("position out of bound")
+		var elem: AudioTrack
+		queue = LinkedBlockingDeque(queue.toMutableList().also { elem = it.removeAt(pos - 1) })
+		return elem
+	}
 
 	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
 		if (!repeat.get() || lastTrack == null) {
@@ -83,7 +92,7 @@ class Scheduler(private val player: AudioPlayer,
 				}
 				// messageDispatcher.sendMessage("Queue finished.")
 			}
-		} else player.startTrack(lastTrack, true)
+		} else player.startTrack(lastTrack.makeClone(), true)
 		return player.playingTrack?.info?.title
 	}
 
@@ -93,7 +102,7 @@ class Scheduler(private val player: AudioPlayer,
 
 	override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason) {
 		if (repeat.get())
-			startNextTrack(true, track!!.makeClone())
+			startNextTrack(true, track)
 		else if (endReason.mayStartNext) {
 			startNextTrack(true)
 			// messageDispatcher.sendMessage(String.format("Track %s finished.", track!!.info.title))
