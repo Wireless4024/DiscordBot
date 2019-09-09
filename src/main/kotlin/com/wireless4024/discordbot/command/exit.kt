@@ -9,6 +9,7 @@ import kotlin.system.exitProcess
 
 class exit : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Nothing {
+		event.ev!!.message.delete().complete()
 		exitProcess(0)
 	}
 
