@@ -21,6 +21,7 @@ class Scheduler(private val player: AudioPlayer,
 	private var queue: BlockingDeque<AudioTrack>
 	private val boxMessage: AtomicReference<Message>
 	private val repeat: AtomicBoolean
+	private var lastTrack: AudioTrack? = null
 
 	init {
 		this.queue = LinkedBlockingDeque()
@@ -41,18 +42,25 @@ class Scheduler(private val player: AudioPlayer,
 		return drainedQueue.toTypedArray()
 	}
 
-	fun playNow(audioTrack: AudioTrack, clearQueue: Boolean) {
+	fun playNow(audioTrack: AudioTrack, clearQueue: Boolean): String? {
 		if (clearQueue) queue.clear()
-		queue.addFirst(audioTrack)
-		startNextTrack(false)
+		queue.addFirst(audioTrack.makeClone())
+		return startNextTrack(false)
 	}
 
 	fun size() = queue.size
-
 	/**
 	 * skip current track
 	 */
 	fun skip() = startNextTrack(false, player.playingTrack)
+
+	fun previous(): String? {
+		if (lastTrack == null)
+			throw CommandError("player doesn't have last played track")
+		if (player.playingTrack != null)
+			queue.addFirst(player.playingTrack)
+		return playNow(lastTrack!!, false)
+	}
 
 	fun clear() = queue.clear()
 
@@ -78,6 +86,7 @@ class Scheduler(private val player: AudioPlayer,
 	}
 
 	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
+		with(lastTrack) { this@Scheduler.lastTrack = this }
 		if (!repeat.get() || lastTrack == null) {
 			if (queue.isNotEmpty() && queue.first != null) {
 				if (!player.startTrack(queue.first, noInterrupt))
@@ -101,10 +110,8 @@ class Scheduler(private val player: AudioPlayer,
 	}
 
 	override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason) {
-		if (repeat.get())
+		if (endReason.mayStartNext) {
 			startNextTrack(true, track)
-		else if (endReason.mayStartNext) {
-			startNextTrack(true)
 			// messageDispatcher.sendMessage(String.format("Track %s finished.", track!!.info.title))
 		}
 	}

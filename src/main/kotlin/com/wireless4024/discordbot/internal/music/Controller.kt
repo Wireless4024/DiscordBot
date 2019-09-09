@@ -124,9 +124,9 @@ class Controller(val parent: ConfigurationCache) {
 		}
 	}
 
-	private fun leave(message: Message) {
-		parent.closeAudioConnection()
-	}
+	private fun leave(message: Message) = parent.closeAudioConnection()
+
+	fun previous() = scheduler.previous()
 
 	/**
 	 * @param pickfirst Boolean if search result ticked as playlist should player add song as single track
