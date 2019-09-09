@@ -55,7 +55,9 @@ class music : ICommandBase {
 
 	@Command
 	fun queue(args: CommandLine, event: MessageEvent): MessageEmbed {
-		return event.musicController.listAsEmbed(event, 1)
+		return event.musicController.listAsEmbed(
+				event, args.args.getOrNull(0)?.toIntOrNull() ?: 1
+		)
 	}
 
 	@Command

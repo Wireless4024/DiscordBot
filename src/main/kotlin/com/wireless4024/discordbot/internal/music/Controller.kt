@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.managers.AudioManager
 import org.apache.commons.cli.CommandLine
 import java.awt.Color
 import kotlin.math.max
+import kotlin.math.min
 
 class Controller(val parent: ConfigurationCache) {
 	private var player: AudioPlayer
@@ -74,9 +75,17 @@ class Controller(val parent: ConfigurationCache) {
 			it.setTitle("Song queue | page $page")
 			it.setDescription("${queue.size} song in queue | duration ${Utils.toReadableFormatTime(scheduler.queueDuation)} remaining")
 			it.setColor(Color.GREEN)
-			for (i in queue)
+			for (i in queue.safePartition(page))
 				it.addField(i.info.title, "duration : " + Utils.toReadableFormatTime(i.duration), false)
 		}.build()
+	}
+
+	private inline fun <reified T> Array<T>.safePartition(page: Int, size: Int = 10): Array<T> {
+		val min = (page - 1) * size
+		val end = min(min + size, this.size)
+		if (min >= this.size)
+			return emptyArray()
+		return this.sliceArray(min until end)
 	}
 
 	private fun forward(message: Message, duration: Int) {
