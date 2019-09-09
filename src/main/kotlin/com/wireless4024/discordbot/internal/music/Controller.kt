@@ -131,7 +131,7 @@ class Controller(val parent: ConfigurationCache) {
 			override fun trackLoaded(track: AudioTrack) {
 				connect(parent.audioManager, event.member.voiceState?.channel)
 
-				event.reply("Starting now: ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)})")
+				event.reply("now playing: ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)})")
 				scheduler.addToQueue(track)
 			}
 
