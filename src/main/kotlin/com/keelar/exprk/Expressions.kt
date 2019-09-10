@@ -376,7 +376,7 @@ class Expressions {
 
 	fun evalToString(expression: String): String {
 		return try {
-			eval(expression).round(evaluator.context).toEngineeringString()
+			eval(expression).round(evaluator.context).stripTrailingZeros().toEngineeringString()
 		} catch (e: Throwable) {
 			e.cause?.message ?: e.message ?: ""
 		}
