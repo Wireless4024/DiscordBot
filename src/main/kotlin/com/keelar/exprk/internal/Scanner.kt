@@ -85,17 +85,23 @@ internal class Scanner(
 		}
 	}
 
+	private fun isCorrectBigDecimalSyntax(char: Char,
+	                                      previousChar: Char = '\u0000',
+	                                      nextChar: Char = '\u0000'): Boolean {
+		return char.isDigit() || when (char) {
+			'.'      -> true
+			'e'      -> previousChar.isDigit() && (nextChar.isDigit() || nextChar == '+' || nextChar == '-')
+			'+', '-' -> previousChar == 'e' && nextChar.isDigit()
+			else     -> false
+		}
+	}
+
 	private fun number() {
 		while (peek().isDigit()) advance()
 
-		if (peek() == '.' && peekNext().isDigit()) {
+		if (isCorrectBigDecimalSyntax(peek(), peekPrevious(), peekNext())) {
 			advance()
-
-			while (peek().isDigit()) advance()
-		}
-		if (peek() == 'e' && peekNext().isDigit()) {
-			advance()
-			while (with(peek()) { isDigit() || this == '-' || this == '+' }) advance()
+			while (isCorrectBigDecimalSyntax(peek(), peekPrevious(), peekNext())) advance()
 		}
 
 		val value = BigDecimalMath.toBigDecimal(source.substring(start, current))
@@ -110,6 +116,8 @@ internal class Scanner(
 	}
 
 	private fun advance() = source[current++]
+
+	private fun peekPrevious(): Char = if (current > 0) source[current - 1] else '\u0000'
 
 	private fun peek(): Char {
 		return if (isAtEnd()) {
@@ -148,6 +156,6 @@ internal class Scanner(
 	                             || this in 'A'..'Z'
 	                             || this == '_'
 
-	private fun Char.isDigit() = this in '0'..'9'
+	private fun Char.isDigit() = this == '.' || this in '0'..'9'
 
 }
