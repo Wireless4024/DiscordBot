@@ -19,7 +19,7 @@ class music : ICommandBase {
 			"pause"          -> pause(args.dropFirst(), event)
 			"repeat", "r"    -> repeat(args.dropFirst(), event)
 			"remove", "d"    -> remove(args.dropFirst(), event)
-			"previuos", "pv" -> previous(args.dropFirst(), event)
+			"previous", "pv" -> previous(args.dropFirst(), event)
 			else             -> ""
 		}
 	}
