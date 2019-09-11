@@ -33,16 +33,6 @@ class Controller(val parent: ConfigurationCache) {
 		player.addListener(scheduler)
 	}
 
-	private fun add(message: Message, identifier: String) {
-		//addTrack(message, identifier, false)
-	}
-
-	fun now(msgEV: MessageEvent) {
-		//addTrack(message, identifier, true)
-
-		connect(parent.audioManager, msgEV.member.voiceState?.channel)
-	}
-
 	fun queue(args: CommandLine, msgEV: MessageEvent) {
 		val text = args.args.joinToString(" ").trim()
 		if (Utils.urlExisted(text))
