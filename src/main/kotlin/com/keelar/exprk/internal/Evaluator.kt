@@ -20,13 +20,13 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	}
 
 	fun define(name: String, expr: Expr): Evaluator {
-		define(name, eval(expr))
+		define(name.toLowerCase(), eval(expr))
 
 		return this
 	}
 
 	fun addFunction(name: String, function: Function): Evaluator {
-		functions += name to function
+		functions += name.toLowerCase() to function
 
 		return this
 	}
@@ -154,7 +154,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 
 	override fun visitCallExpr(expr: CallExpr): BigDecimal {
 		val name = expr.name
-		val function = functions[name] ?: throw ExpressionException("Undefined function '$name'")
+		val function = functions[name.toLowerCase()] ?: throw ExpressionException("Undefined function '$name'")
 
 		return function.call(expr.arguments.map { eval(it) })
 	}
@@ -166,7 +166,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	override fun visitVariableExpr(expr: VariableExpr): BigDecimal {
 		val name = expr.name.lexeme
 
-		return variables[name] ?: throw ExpressionException("Undefined variable '$name'")
+		return variables[name.toLowerCase()] ?: throw ExpressionException("Undefined variable '$name'")
 	}
 
 	override fun visitGroupingExpr(expr: GroupingExpr): BigDecimal {
