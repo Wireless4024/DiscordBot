@@ -20,6 +20,9 @@ class music : ICommandBase {
 			"repeat", "r"    -> repeat(args.dropFirst(), event)
 			"remove", "d"    -> remove(args.dropFirst(), event)
 			"previous", "pv" -> previous(args.dropFirst(), event)
+			"forward", "fw"  -> forward(args.dropFirst(), event)
+			"backward", "bw" -> backward(args.dropFirst(), event)
+			"seek"           -> seek(args.dropFirst(), event)
 			else             -> ""
 		}
 	}
@@ -83,6 +86,24 @@ class music : ICommandBase {
 	@Command
 	fun previous(args: CommandLine, event: MessageEvent): String {
 		return event.musicController.previous()?.let { "now playing : $it" } ?: ""
+	}
+
+	@Command
+	fun forward(args: CommandLine, event: MessageEvent): String {
+		return "now playing at ${Utils.toReadableFormatTime(event.musicController.forward((args[0]?.toIntOrNull()
+		                                                                                   ?: 0) * 1000))}"
+	}
+
+	@Command
+	fun backward(args: CommandLine, event: MessageEvent): String {
+		return "now playing at ${Utils.toReadableFormatTime(event.musicController.back((args[0]?.toIntOrNull()
+		                                                                                ?: 0) * 1000))}"
+	}
+
+	@Command
+	fun seek(args: CommandLine, event: MessageEvent): String {
+		return "now playing at ${Utils.toReadableFormatTime(event.musicController.seek((args[0]?.toLongOrNull()
+		                                                                                ?: 0) * 1000))}"
 	}
 
 	override val options: List<Option> = listOf()
