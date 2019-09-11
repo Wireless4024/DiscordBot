@@ -60,7 +60,7 @@ $str
 }
 
 operator fun CommandLine.get(index: Int): String? {
-	return this.args[index]
+	return if (this.args.size > index) null else this.args[index]
 }
 
 operator fun CommandLine.get(option: String): String? {
