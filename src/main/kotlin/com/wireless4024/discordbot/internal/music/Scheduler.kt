@@ -59,7 +59,7 @@ class Scheduler(private val player: AudioPlayer,
 			throw CommandError("player doesn't have last played track")
 		if (player.playingTrack != null)
 			queue.addFirst(player.playingTrack)
-		return playNow(lastTrack!!, false)
+		return playNow(lastTrack!!, false).also { lastTrack = null }
 	}
 
 	fun clear() = queue.clear()
