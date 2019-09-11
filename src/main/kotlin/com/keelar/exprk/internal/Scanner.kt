@@ -36,6 +36,7 @@ internal class Scanner(
 		when (c.toLowerCase()) {
 			' ',
 			'\r',
+			'\n',
 			'\t' -> {
 				// Ignore whitespace.
 			}
@@ -88,25 +89,17 @@ internal class Scanner(
 	private fun isCorrectBigDecimalSyntax(char: Char,
 	                                      previousChar: Char = '\u0000',
 	                                      nextChar: Char = '\u0000'): Boolean {
-		return char.isDigit() || when (char) {
-			'.'      -> true
-			'e'      -> previousChar.isDigit() && (nextChar.isDigit() || nextChar == '+' || nextChar == '-')
-			'+', '-' -> previousChar == 'e' && nextChar.isDigit()
+		return char in '0'..'9' || when (char) {
+			'.'      -> previousChar != '.' && nextChar != '.'
+			'e', 'E' -> previousChar.isDigit() && (nextChar.isDigit() || nextChar == '+' || nextChar == '-')
+			'+', '-' -> (previousChar == 'e' || previousChar == 'E') && nextChar.isDigit()
 			else     -> false
 		}
 	}
 
 	private fun number() {
-		while (peek().isDigit()) advance()
-
-		if (isCorrectBigDecimalSyntax(peek(), peekPrevious(), peekNext())) {
-			advance()
-			while (isCorrectBigDecimalSyntax(peek(), peekPrevious(), peekNext())) advance()
-		}
-
-		val value = BigDecimalMath.toBigDecimal(source.substring(start, current))
-
-		addToken(NUMBER, value)
+		while (isCorrectBigDecimalSyntax(peek(), peekPrevious(), peekNext())) advance()
+		addToken(NUMBER, BigDecimalMath.toBigDecimal(source.substring(start, current)))
 	}
 
 	private fun identifier() {
@@ -119,42 +112,24 @@ internal class Scanner(
 
 	private fun peekPrevious(): Char = if (current > 0) source[current - 1] else '\u0000'
 
-	private fun peek(): Char {
-		return if (isAtEnd()) {
-			'\u0000'
-		} else {
-			source[current]
-		}
-	}
+	private fun peek() = if (isAtEnd()) '\u0000' else source[current]
 
-	private fun peekNext(): Char {
-		return if (current + 1 >= source.length) {
-			'\u0000'
-		} else {
-			source[current + 1]
-		}
-	}
+	private fun peekNext() = if (current + 1 >= source.length) '\u0000' else source[current + 1]
 
 	private fun match(expected: Char): Boolean {
-		if (isAtEnd()) return false
-		if (source[current] != expected) return false
-
-		current++
+		if (isAtEnd() || source[current] != expected) return false
+		++current
 		return true
 	}
 
 	private fun addToken(type: TokenType) = addToken(type, null)
 
-	private fun addToken(type: TokenType, literal: Any?) {
-		val text = source.substring(start, current)
-		tokens.add(Token(type, text, literal))
-	}
+	private fun addToken(type: TokenType, literal: Any?) =
+			tokens.add(Token(type, source.substring(start, current), literal))
 
 	private fun Char.isAlphaNumeric() = isAlpha() || isDigit()
 
-	private fun Char.isAlpha() = this in 'a'..'z'
-	                             || this in 'A'..'Z'
-	                             || this == '_'
+	private fun Char.isAlpha() = this.toLowerCase() in 'a'..'z' || this == '_'
 
 	private fun Char.isDigit() = this == '.' || this in '0'..'9'
 
