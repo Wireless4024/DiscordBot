@@ -11,7 +11,6 @@ import com.wireless4024.discordbot.internal.ConfigurationCache
 import com.wireless4024.discordbot.internal.MessageEvent
 import com.wireless4024.discordbot.internal.Utils
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.managers.AudioManager
@@ -81,40 +80,26 @@ class Controller(val parent: ConfigurationCache) {
 		return this.sliceArray(min until end)
 	}
 
-	private fun forward(message: Message, duration: Int) {
-		playing {
-			it.position = it.position + duration
-		}
-	}
+	fun forward(duration: Int) = playing { it.position = it.position + duration;it.position }!!
 
-	private fun back(message: Message, duration: Int) {
-		playing {
-			it.position = max(0, it.position - duration)
-		}
-	}
+	fun back(duration: Int) = playing { it.position = max(0, it.position - duration); it.position }!!
 
-	fun pause(): Boolean = player.isPaused.also { player.isPaused = !it }
+	fun pause() = player.isPaused.also { player.isPaused = !it }
 
-	fun repeat(): Boolean = scheduler.repeat()
+	fun repeat() = scheduler.repeat()
 
 	fun removeQueue(pos: Int) = scheduler.remove(pos)
 
-	val duration
-		get() = playing { it }?.duration ?: 0
+	val duration get() = player.playingTrack?.duration ?: 0
 
-	fun seek(message: Message, position: Long) {
-		playing {
+	fun seek(position: Long): Long {
+		return playing {
 			it.position = position
-		}
+			it.position
+		}!!
 	}
 
-	private fun pos(message: Message) {
-		playing {
-			message.channel.sendMessage("Position is " + it.position).queue()
-		}
-	}
-
-	private fun leave(message: Message) = parent.closeAudioConnection()
+	fun pos() = playing { "Position is " + it.position }!!
 
 	fun previous() = scheduler.previous()
 
@@ -162,7 +147,10 @@ class Controller(val parent: ConfigurationCache) {
 		})
 	}
 
-	private inline fun <T> playing(operation: ((AudioTrack) -> T?)): T? = with(player.playingTrack) { operation(this) }
+	private inline fun <T> playing(operation: ((AudioTrack) -> T?)): T? =
+			with(player.playingTrack ?: throw CommandError("player is not playing")) {
+				operation(this)
+			}
 
 	private fun connect(audioManager: AudioManager, voiceChannel: VoiceChannel?, force: Boolean = false): String {
 		if (voiceChannel == null)
