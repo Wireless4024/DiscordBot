@@ -23,25 +23,29 @@ class Handler : ListenerAdapter() {
 			launch {
 				val message = event.message
 				val messageText = message.contentDisplay.replace(Regex("\\s+"), " ")
+				val ev = MessageEvent(event)
 				Utils.log("[${message.member!!.getFullName()}] : $messageText", deep = 2)
 				if (FastFunction.startWith(messageText, '=')) {
 					val number = Utils.execute(5,
 					                           SECONDS,
-					                           Callable { Property.Expressions.evalToString(messageText.substring(1)) })
+					                           Callable {
+						                           ev.configuration.Expressions
+								                           .evalToString(messageText.substring(1))
+					                           })
 					             ?: "Execution timeout"
 					if (number == "Execution timeout")
 						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
-                    GlobalScope.launch {
-                        delay(Property.BASE_SLEEP_DELAY_MILLI)
-                        event.message.delete().queue()
-                    }
+					GlobalScope.launch {
+						delay(Property.BASE_SLEEP_DELAY_MILLI)
+						event.message.delete().queue()
+					}
 				}
 				if (messageText.startsWith(Property.PREFIX)) {
 					ICommandBase.invokeCommand(
 							Property.Commands[Utils.getCommand(messageText)],
 							Utils.getParameter(messageText),
-							MessageEvent(event)
+							ev
 					)
 					GlobalScope.launch {
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
