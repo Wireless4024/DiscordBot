@@ -1,6 +1,5 @@
 package com.wireless4024.discordbot.internal
 
-import com.keelar.exprk.Expressions
 import net.dv8tion.jda.api.entities.Member
 
 interface Property {
@@ -20,8 +19,6 @@ interface Property {
 		val BASE_SLEEP_DELAY_MILLI = BASE_SLEEP_DELAY * 1000L
 		@JvmStatic
 		val PREFIX = "--"
-		@JvmStatic
-		val Expressions = Expressions()
 		val Commands: CommandPool by lazyOf(CommandPool())
 		/* @formatter:on */
 
