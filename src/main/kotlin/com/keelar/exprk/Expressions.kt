@@ -3,6 +3,7 @@ package com.keelar.exprk
 import ch.obermuhlner.math.big.BigDecimalMath
 import com.keelar.exprk.internal.*
 import com.keelar.exprk.internal.Function
+import com.wireless4024.discordbot.internal.CommandError
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -318,6 +319,10 @@ class Expressions {
 	fun setPrecision(precision: Int): Expressions {
 		if (precision == -1)
 			return this
+
+		if (precision == 0)
+			throw CommandError("infinity precision now allowed")
+
 		evaluator.context = MathContext(precision, roundingMode)
 
 
