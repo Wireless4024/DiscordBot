@@ -30,6 +30,8 @@ class ConfigurationCache private constructor(var guild: Guild) {
 	val audioManager
 		get() = guild.audioManager
 
+	var Expressions = com.keelar.exprk.Expressions()
+
 	fun closeAudioConnection() = audioManager.closeAudioConnection()
 
 	fun update(guild: Guild? = null): ConfigurationCache = this.also {
