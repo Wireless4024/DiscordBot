@@ -316,6 +316,8 @@ class Expressions {
 		get() = evaluator.context.roundingMode
 
 	fun setPrecision(precision: Int): Expressions {
+		if (precision == -1)
+			return this
 		evaluator.context = MathContext(precision, roundingMode)
 
 
