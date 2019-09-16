@@ -3,6 +3,7 @@ package com.keelar.exprk.internal
 import ch.obermuhlner.math.big.BigDecimalMath
 import com.keelar.exprk.ExpressionException
 import com.keelar.exprk.internal.TokenType.*
+import java.math.BigDecimal
 import java.math.MathContext
 
 private fun invalidToken(c: Char) {
@@ -46,13 +47,14 @@ internal class Scanner(
 			'/'  -> if (match('/')) addToken(DOUBLE_SLASH, "//") else addToken(SLASH)
 			'%'  -> addToken(MODULO)
 			'^'  -> addToken(XOR, "^")
-			'r'  -> if (match('o'))
+			/*'r'  -> if (match('o'))
 				when {
 					match('r') -> addToken(ROR, "ror")
 					match('l') -> addToken(ROL, "rol")
 					else       -> invalidToken(c)
 				}
 			else invalidToken(c)
+			*/
 			'~'  -> when {
 				match('&') -> addToken(NAND, "~&")
 				match('|') -> addToken(NOR, "~|")
@@ -86,9 +88,11 @@ internal class Scanner(
 		}
 	}
 
-	private fun isCorrectBigDecimalSyntax(char: Char,
-	                                      previousChar: Char = '\u0000',
-	                                      nextChar: Char = '\u0000'): Boolean {
+	private fun isCorrectBigDecimalSyntax(
+			char: Char,
+			previousChar: Char = '\u0000',
+			nextChar: Char = '\u0000'
+	): Boolean {
 		return char in '0'..'9' || when (char) {
 			'.'      -> previousChar != '.' && nextChar != '.'
 			'e', 'E' -> previousChar.isDigit() && (nextChar.isDigit() || nextChar == '+' || nextChar == '-')
@@ -99,7 +103,15 @@ internal class Scanner(
 
 	private fun number() {
 		while (isCorrectBigDecimalSyntax(peek(), peekPrevious(), peekNext())) advance()
-		addToken(NUMBER, BigDecimalMath.toBigDecimal(source.substring(start, current)))
+		addToken(NUMBER, postFix(peek(), peekNext()) ?: BigDecimalMath.toBigDecimal(source.substring(start, current)))
+	}
+
+	private fun postFix(now: Char, next: Char): BigDecimal? {
+		return when {
+			now == '!' && next != '=' -> BigDecimalMath.factorial(
+					BigDecimalMath.toBigDecimal(source.substring(start, current - 1)), mathContext).also { advance() }
+			else                      -> null
+		}
 	}
 
 	private fun identifier() {
@@ -109,6 +121,7 @@ internal class Scanner(
 	}
 
 	private fun advance() = source[current++]
+	private fun back() = source[current--]
 
 	private fun peekPrevious(): Char = if (current > 0) source[current - 1] else '\u0000'
 
