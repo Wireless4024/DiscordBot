@@ -58,7 +58,12 @@ internal class InvokableInstance(val cm: ICommandBase) : Invokable {
 	override fun name(): String = cm.name()
 	override fun parse(msg: Array<String>): CommandLine = cm.parse(msg)
 	override fun genOptions(): Options = cm.genOptions()
-	override fun invoke(args: CommandLine, event: MessageEvent): Any = cm(args, event)
+	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
+		cm(args, event)
+	} catch (e: Exception) {
+		e.printStackTrace()
+		e.cause?.message ?: e.message ?: ""
+	}
 }
 
 internal class InvokableMethod(val method: Method, val parent: ICommandBase) : Invokable {
@@ -73,6 +78,7 @@ internal class InvokableMethod(val method: Method, val parent: ICommandBase) : I
 	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
 		method.invoke(parent, args, event)
 	} catch (e: java.lang.reflect.InvocationTargetException) {
+		e.printStackTrace()
 		e.cause?.message ?: e.message ?: ""
 	}
 }
