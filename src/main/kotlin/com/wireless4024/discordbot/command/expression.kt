@@ -22,6 +22,7 @@ class expression : ICommandBase {
 					else    -> "[floor, ceil]"
 				}
 			}
+			"prec",
 			"precision" -> {
 				event.configuration.Expressions.setPrecision(args[1]?.toIntOrNull() ?: -1)
 				"precision is ${event.configuration.Expressions.precision}"
