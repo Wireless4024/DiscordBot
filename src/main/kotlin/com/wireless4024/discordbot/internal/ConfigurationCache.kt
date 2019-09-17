@@ -23,6 +23,8 @@ class ConfigurationCache private constructor(var guild: Guild) {
 
 	val musicController = Controller(this)
 
+	var prefix = Property.PREFIX
+
 	var audioSendHandler: AudioSendHandler?
 		get() = audioManager.sendingHandler
 		set(value) = with(value) { audioManager.sendingHandler = this }

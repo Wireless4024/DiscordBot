@@ -43,9 +43,9 @@ class Handler : ListenerAdapter() {
 						event.message.delete().queue()
 					}
 				}
-				if (messageText.startsWith(Property.PREFIX)) {
+				if (messageText.startsWith(ev.configuration.prefix)) {
 					ICommandBase.invokeCommand(
-							Property.Commands[Utils.getCommand(messageText)],
+							Property.Commands[Utils.getCommand(messageText, ev.configuration.prefix)],
 							Utils.getParameter(messageText),
 							ev
 					)

@@ -54,11 +54,11 @@ class Utils {
 		}
 
 		@JvmStatic
-		fun getCommand(args: String): String {
+		fun getCommand(args: String, prefix: String): String {
 			return if (args.indexOf(' ') == -1)
-				args.substring(Property.PREFIX.length)
+				args.substring(prefix.length)
 			else
-				args.substringBefore(' ').substring(Property.PREFIX.length)
+				args.substringBefore(' ').substring(prefix.length)
 		}
 
 		@JvmStatic
