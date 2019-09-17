@@ -12,6 +12,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit.SECONDS
 
 class Handler : ListenerAdapter() {
+	val noWhiteSpace = Regex("[\\s\r\n\t]+")
 	private fun Member.getFullName(): String {
 		return if (this.nickname != null) "${this.nickname}(${this.user.name})" else this.user.name
 	}
@@ -22,7 +23,7 @@ class Handler : ListenerAdapter() {
 		runBlocking {
 			launch {
 				val message = event.message
-				val messageText = message.contentDisplay.replace(Regex("\\s+"), " ")
+				val messageText = message.contentDisplay.replace(noWhiteSpace, " ")
 				val ev = MessageEvent(event)
 				Utils.log("[${message.member!!.getFullName()}] : $messageText", deep = 2)
 				if (FastFunction.startWith(messageText, '=')) {
