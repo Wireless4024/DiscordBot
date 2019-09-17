@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import com.wireless4024.discordbot.internal.CommandError
+import com.wireless4024.discordbot.internal.Property
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -15,8 +16,10 @@ import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-class Scheduler(private val player: AudioPlayer,
-                private val parent: Controller) : AudioEventAdapter() {
+class Scheduler(
+	private val player: AudioPlayer,
+	private val parent: Controller
+) : AudioEventAdapter() {
 
 	private var queue: BlockingDeque<AudioTrack>
 	private val boxMessage: AtomicReference<Message>
@@ -95,7 +98,7 @@ class Scheduler(private val player: AudioPlayer,
 			} else {
 				player.stopTrack()
 				GlobalScope.launch {
-					delay(30000)
+					delay(Property.BASE_SLEEP_DELAY_MILLI)
 					if (player.playingTrack == null && (queue.isEmpty() || queue.first == null))
 						parent.leave()
 				}
