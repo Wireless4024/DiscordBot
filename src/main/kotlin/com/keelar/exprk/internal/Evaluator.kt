@@ -14,14 +14,14 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	private val variables: LinkedHashMap<String, BigDecimal> = linkedMapOf()
 	private val functions: MutableMap<String, Function> = mutableMapOf()
 
-	private fun define(name: String, value: BigDecimal, override: Boolean = false) {
+	internal fun define0(name: String, value: BigDecimal, override: Boolean = false) {
 		if (name in arrayOf("pi", "e") && !override)
 			throw UnsupportedOperationException("pi and e doesn't allow to override")
 		variables += name to value
 	}
 
-	fun define(name: String, expr: Expr): Evaluator {
-		define(name.toLowerCase(), eval(expr))
+	fun define0(name: String, expr: Expr): Evaluator {
+		define0(name.toLowerCase(), eval(expr))
 
 		return this
 	}
@@ -41,7 +41,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	override fun visitAssignExpr(expr: AssignExpr): BigDecimal {
 		val value = eval(expr.value)
 
-		define(expr.name.lexeme, value)
+		define0(expr.name.lexeme, value)
 
 		return value
 	}

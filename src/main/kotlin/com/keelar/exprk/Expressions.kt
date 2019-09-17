@@ -16,8 +16,8 @@ class Expressions {
 	private val evaluator = Evaluator()
 
 	init {
-		define("pi", BigDecimalMath.pi(evaluator.context))
-		define("e", BigDecimalMath.e(evaluator.context))
+		define("pi", BigDecimalMath.pi(evaluator.context), true)
+		define("e", BigDecimalMath.e(evaluator.context), true)
 
 		evaluator.addFunction("abs", object : Function() {
 			override fun call(arguments: List<BigDecimal>): BigDecimal {
@@ -347,15 +347,15 @@ class Expressions {
 		return this
 	}
 
-	fun define(name: String, value: BigDecimal): Expressions {
-		define(name, value.toPlainString())
+	fun define(name: String, value: BigDecimal, override: Boolean = false): Expressions {
+		evaluator.define0(name, value, override)
 
 		return this
 	}
 
 	fun define(name: String, expression: String): Expressions {
 		val expr = parse(expression)
-		evaluator.define(name, expr)
+		evaluator.define0(name, expr)
 
 		return this
 	}
