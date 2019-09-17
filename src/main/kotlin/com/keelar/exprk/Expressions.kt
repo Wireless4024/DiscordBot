@@ -325,6 +325,8 @@ class Expressions {
 
 		evaluator.context = MathContext(precision, roundingMode)
 
+		define("pi", BigDecimalMath.pi(evaluator.context), true)
+		define("e", BigDecimalMath.e(evaluator.context), true)
 
 		return this
 	}
@@ -332,17 +334,20 @@ class Expressions {
 	fun setRoundingMode(roundingMode: RoundingMode): Expressions {
 		evaluator.context = MathContext(precision, roundingMode)
 
+		define("pi", BigDecimalMath.pi(evaluator.context), true)
+		define("e", BigDecimalMath.e(evaluator.context), true)
+
 		return this
 	}
 
 	fun define(name: String, value: Long): Expressions {
-		define(name, value.toString())
+		define(name, BigDecimal.valueOf(value))
 
 		return this
 	}
 
 	fun define(name: String, value: Double): Expressions {
-		define(name, value.toString())
+		define(name, BigDecimal(value))
 
 		return this
 	}
