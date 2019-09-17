@@ -6,16 +6,17 @@ import com.keelar.exprk.internal.TokenType.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
-import java.math.RoundingMode
 import java.math.RoundingMode.FLOOR
 
 internal class Evaluator : ExprVisitor<BigDecimal> {
-	internal var context: MathContext = MathContext(128, RoundingMode.FLOOR)
+	internal var context: MathContext = MathContext(128, FLOOR)
 
 	private val variables: LinkedHashMap<String, BigDecimal> = linkedMapOf()
 	private val functions: MutableMap<String, Function> = mutableMapOf()
 
-	private fun define(name: String, value: BigDecimal) {
+	private fun define(name: String, value: BigDecimal, override: Boolean = false) {
+		if (name in arrayOf("pi", "e") && !override)
+			throw UnsupportedOperationException("pi and e doesn't allow to override")
 		variables += name to value
 	}
 
@@ -26,6 +27,8 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	}
 
 	fun addFunction(name: String, function: Function): Evaluator {
+		if (functions.containsKey(name.toLowerCase()))
+			throw UnsupportedOperationException("function $name already existed")
 		functions += name.toLowerCase() to function
 
 		return this
