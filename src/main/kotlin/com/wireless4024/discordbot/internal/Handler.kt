@@ -40,10 +40,10 @@ class Handler : ListenerAdapter() {
 						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
 					GlobalScope.launch1 {
-						if (event.responseNumber == -1L) return@launch1
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
-							event.message.delete().queue()
+							if (event.responseNumber != -1L)
+								event.message.delete().queue()
 						} catch (e: ContextException) {
 						}
 					}
@@ -55,10 +55,10 @@ class Handler : ListenerAdapter() {
 						ev
 					)
 					GlobalScope.launch1 {
-						if (event.responseNumber == -1L) return@launch1
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
-							event.message.delete().queue()
+							if (event.responseNumber != -1L)
+								event.message.delete().queue()
 						} catch (e: ContextException) {
 						}
 					}
