@@ -126,8 +126,11 @@ class Controller(val parent: ConfigurationCache) {
 
 				if (pickfirst)
 					return this.trackLoaded(playlist.selectedTrack ?: playlist.tracks.let {
-						it.firstOrNull { it.info.title.contains("audio", true) }
-							?: it.firstOrNull { it.info.title.contains("official ", true) } ?: it[0]
+						it.firstOrNull {
+							it.info.title.contains("audio", true) &&
+									!it.info.title.contains("live", true) &&
+									!it.info.title.contains("performance", true)
+						} ?: it[0]
 					})
 
 				val tracks = playlist.tracks
