@@ -7,7 +7,7 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		System.setProperty("idea.io.use.fallback", "true");
 
-		new JDABuilder(AccountType.BOT).setToken(Property.getTOKEN()).setAudioSendFactory(new NativeAudioSendFactory())
+		new JDABuilder(AccountType.BOT).setToken(Property.getTOKEN())//.setAudioSendFactory(new NativeAudioSendFactory())
 		                               .addEventListeners(new com.wireless4024.discordbot.internal.Handler()).build();
 	}
 }
