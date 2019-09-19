@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.exceptions.ContextException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit.SECONDS
+import kotlinx.coroutines.launch as launch1
 
 class Handler : ListenerAdapter() {
 	val noWhiteSpace = Regex("[\\s\r\n\t]+")
@@ -32,24 +33,29 @@ class Handler : ListenerAdapter() {
 					                           SECONDS,
 					                           Callable {
 						                           ev.configuration.Expressions
-								                           .evalToString(messageText.substring(1))
+							                           .evalToString(messageText.substring(1))
 					                           })
-					             ?: "Execution timeout"
+						?: "Execution timeout"
 					if (number == "Execution timeout")
 						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
-					GlobalScope.launch {
+					GlobalScope.launch1 {
+						if (event.responseNumber == -1L) return@launch1
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
-						event.message.delete().queue()
+						try {
+							event.message.delete().queue()
+						} catch (e: ContextException) {
+						}
 					}
 				}
 				if (messageText.startsWith(ev.configuration.prefix)) {
 					ICommandBase.invokeCommand(
-							Property.Commands[Utils.getCommand(messageText, ev.configuration.prefix)],
-							Utils.getParameter(messageText),
-							ev
+						Property.Commands[Utils.getCommand(messageText, ev.configuration.prefix)],
+						Utils.getParameter(messageText),
+						ev
 					)
-					GlobalScope.launch {
+					GlobalScope.launch1 {
+						if (event.responseNumber == -1L) return@launch1
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
 							event.message.delete().queue()
