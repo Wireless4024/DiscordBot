@@ -48,11 +48,11 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun join(msgEV: MessageEvent) = connect(parent.audioManager, msgEV.member.voiceState?.channel, true)
 
-	fun leave(msgEV: MessageEvent? = null) =
+	fun leave() =
 		with(parent.audioManager) { (this.connectedChannel?.name).also { scheduler.clear();this.closeAudioConnection() } }
 			?: throw CommandError("wait dude I i can't leave I MOST BE IN VOICE CHANNEL TO USE THIS COMMAND!")
 
-	fun skip(msgEV: MessageEvent) = scheduler.skip()
+	fun skip() = scheduler.skip()
 
 	fun clear() = scheduler.clear()
 
@@ -64,7 +64,7 @@ class Controller(val parent: ConfigurationCache) {
 		return player.volume
 	}
 
-	fun listAsEmbed(msgEV: MessageEvent, page: Int = 1): MessageEmbed {
+	fun listAsEmbed(page: Int = 1): MessageEmbed {
 		val queue = scheduler.queues
 		return EmbedBuilder().also {
 			it.setTitle("Song queues | page $page")

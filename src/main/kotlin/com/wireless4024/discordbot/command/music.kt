@@ -39,7 +39,7 @@ class music : ICommandBase {
 	@Command
 	fun s(event: MessageEvent): String {
 		event.ensureVoiceConnected()
-		val playing = event.musicController.skip(event)
+		val playing = event.musicController.skip()
 		return if (playing != null) "now playing $playing" else "player stopped"
 	}
 
@@ -69,7 +69,7 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	@Command
 	fun leave(event: MessageEvent): String {
 		event.ensureVoiceConnected()
-		return "I'm leaving ${event.musicController.leave(event)}"
+		return "I'm leaving ${event.musicController.leave()}"
 	}
 
 	@Command
@@ -80,9 +80,7 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 
 	@Command
 	fun queue(args: CommandLine, event: MessageEvent): MessageEmbed {
-		return event.musicController.listAsEmbed(
-			event, args.args.getOrNull(0)?.toIntOrNull() ?: 1
-		)
+		return event.musicController.listAsEmbed(args.args.getOrNull(0)?.toIntOrNull() ?: 1)
 	}
 
 	@Command
