@@ -105,7 +105,7 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 
 	@Command
 	fun previous(event: MessageEvent): String {
-		return event.musicController.previous()?.let { "now playing : $it" } ?: ""
+		return event.musicController.previous(event.voiceChannel)?.let { "now playing : $it" } ?: ""
 	}
 
 	@Command

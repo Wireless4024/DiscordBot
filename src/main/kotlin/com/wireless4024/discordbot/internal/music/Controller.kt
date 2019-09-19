@@ -118,7 +118,10 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun pos() = playing { "Position is " + it.position }!!
 
-	fun previous() = scheduler.previous()
+	fun previous(channel: VoiceChannel?): String? {
+		connect(parent.audioManager, channel)
+		return scheduler.previous()
+	}
 
 	/**
 	 * @param pickfirst Boolean if search result ticked as playlist should player add song as single track
