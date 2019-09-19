@@ -24,7 +24,7 @@ class Controller(val parent: ConfigurationCache) {
 	private val BASS_BOOST = floatArrayOf(2.5f, 0.2f, 0.1f, 0.05f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0.1f, 0.15f, 0.25f)
 	private var player: AudioPlayer
 	private var manager: AudioPlayerManager = parent.audioPlayerManager
-	private var baseBoosted = false
+	private var bassBoosted = false
 	private val equalizer: EqualizerFactory = EqualizerFactory().also {
 		BASS_BOOST.forEachIndexed { index, value -> it.setGain(index, value) }
 	}
@@ -90,11 +90,11 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun player() = player
 
-	fun baseBoost(): Boolean {
-		if (baseBoosted) player.setFilterFactory(null) else player.setFilterFactory(equalizer)
-		baseBoosted = !baseBoosted
+	fun bassBoost(): Boolean {
+		if (bassBoosted) player.setFilterFactory(null) else player.setFilterFactory(equalizer)
+		bassBoosted = !bassBoosted
 
-		return baseBoosted
+		return bassBoosted
 	}
 
 	fun forward(duration: Int) = playing { it.position = it.position + duration;it.position }!!
