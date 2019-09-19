@@ -43,7 +43,7 @@ class Controller(val parent: ConfigurationCache) {
 	fun join(msgEV: MessageEvent) = connect(parent.audioManager, msgEV.member.voiceState?.channel, true)
 
 	fun leave(msgEV: MessageEvent? = null) =
-			with(parent.audioManager) { (this.connectedChannel?.name).also { scheduler.clear();this.closeAudioConnection() } }
+		with(parent.audioManager) { (this.connectedChannel?.name).also { scheduler.clear();this.closeAudioConnection() } }
 			?: throw CommandError("wait dude I i can't leave I MOST BE IN VOICE CHANNEL TO USE THIS COMMAND!")
 
 	fun skip(msgEV: MessageEvent) = scheduler.skip()
@@ -66,9 +66,11 @@ class Controller(val parent: ConfigurationCache) {
 			it.setColor(Color.GREEN)
 			var position = (page - 1) * 10
 			for (i in queue.safePartition(page))
-				it.addField("${++position}. ${i.info.title}",
-				            "duration : " + Utils.toReadableFormatTime(i.duration),
-				            false)
+				it.addField(
+					"${++position}. ${i.info.title}",
+					"duration : " + Utils.toReadableFormatTime(i.duration),
+					false
+				)
 		}.build()
 	}
 
@@ -111,7 +113,7 @@ class Controller(val parent: ConfigurationCache) {
 			override fun trackLoaded(track: AudioTrack) {
 				connect(parent.audioManager, event.member.voiceState?.channel)
 
-				if (scheduler.size() == 0)
+				if (scheduler.size() == 0 && player.playingTrack == null)
 					event.reply("now playing: ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)})")
 				else
 					event.reply("added ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)}) to queue")
@@ -123,15 +125,18 @@ class Controller(val parent: ConfigurationCache) {
 				connect(parent.audioManager, event.member.voiceState?.channel)
 
 				if (pickfirst)
-					return this.trackLoaded(playlist.selectedTrack ?: playlist.tracks[0])
+					return this.trackLoaded(playlist.selectedTrack ?: playlist.tracks.let {
+						it.firstOrNull { it.info.title.contains("audio", true) }
+							?: it.firstOrNull { it.info.title.contains("official ", true) } ?: it[0]
+					})
 
 				val tracks = playlist.tracks
 				var len = 0
 				var duration = 0L
 				tracks.slice(
-						(if (playlist.selectedTrack == null) 0 else tracks.indexOf(
-								playlist.selectedTrack
-						)) until tracks.size
+					(if (playlist.selectedTrack == null) 0 else tracks.indexOf(
+						playlist.selectedTrack
+					)) until tracks.size
 				).forEach { ++len;duration += it.duration;scheduler.addToQueue(it) }.also {
 					event.reply = "added $len tracks duration ${Utils.toReadableFormatTime(duration)}"
 				}
@@ -148,9 +153,9 @@ class Controller(val parent: ConfigurationCache) {
 	}
 
 	private inline fun <T> playing(operation: ((AudioTrack) -> T?)): T? =
-			with(player.playingTrack ?: throw CommandError("player is not playing")) {
-				operation(this)
-			}
+		with(player.playingTrack ?: throw CommandError("player is not playing")) {
+			operation(this)
+		}
 
 	private fun connect(audioManager: AudioManager, voiceChannel: VoiceChannel?, force: Boolean = false): String {
 		if (voiceChannel == null)
