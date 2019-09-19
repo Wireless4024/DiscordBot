@@ -11,29 +11,24 @@ class CommandPool(path: String = "com.wireless4024.discordbot.command") {
 	init {
 		val rfc = Reflections(path)
 		rfc.getSubTypesOf(ICommandBase::class.java)
-				.forEach { c ->
-					run {
-						val inst = c.getDeclaredConstructor()
-								.newInstance()
-						commands[inst.name().toLowerCase()] = InvokableInstance(inst)
-						c.declaredMethods.filter { method ->
-							(method.parameterTypes?.contentEquals(
-									arrayOf(
-											CommandLine::class.java,
-											MessageEvent::class.java
-									)
-							) ?: false) && method.isAnnotationPresent(
-									Command::class.java
+			.forEach { c ->
+				run {
+					val inst = c.getDeclaredConstructor()
+						.newInstance()
+					commands[inst.name().toLowerCase()] = InvokableInstance(inst)
+					c.declaredMethods.filter { method ->
+						method.isAnnotationPresent(
+							Command::class.java
+						)
+					}.forEach { method ->
+						method.isAccessible = true
+						if (!commands.containsKey(method.name.toLowerCase()))
+							commands[method.name.toLowerCase()] = InvokableMethod(
+								method, inst
 							)
-						}.forEach { method ->
-							method.isAccessible = true
-							if (!commands.containsKey(method.name.toLowerCase()))
-								commands[method.name.toLowerCase()] = InvokableMethod(
-										method, inst
-								)
-						}
 					}
 				}
+			}
 	}
 
 	fun get(): MutableCollection<Invokable> = commands.values
@@ -76,7 +71,15 @@ internal class InvokableMethod(val method: Method, val parent: ICommandBase) : I
 	override fun name(): String = method.name
 	override fun parse(msg: Array<String>): CommandLine = parent.parse(msg)
 	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
-		method.invoke(parent, args, event)
+		when (method.parameterCount) {
+			0    -> method.invoke(parent)
+			1    -> when (method.parameterTypes[0]) {
+				MessageEvent::class.java -> method.invoke(parent, event)
+				CommandLine::class.java  -> method.invoke(parent, args)
+				else                     -> "command ${parent.name()}.${method.name} has invalid parameter type"
+			}
+			else -> method.invoke(parent, args, event)
+		}
 	} catch (e: java.lang.reflect.InvocationTargetException) {
 		e.printStackTrace()
 		e.cause?.message ?: e.message ?: ""
