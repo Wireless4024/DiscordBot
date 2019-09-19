@@ -1,5 +1,6 @@
 package com.wireless4024.discordbot.internal.music
 
+import com.sedmelluq.discord.lavaplayer.filter.equalizer.EqualizerFactory
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
@@ -20,8 +21,13 @@ import kotlin.math.max
 import kotlin.math.min
 
 class Controller(val parent: ConfigurationCache) {
+	private val BASS_BOOST = floatArrayOf(2.5f, 0.2f, 0.1f, 0.05f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0.1f, 0.15f, 0.25f)
 	private var player: AudioPlayer
 	private var manager: AudioPlayerManager = parent.audioPlayerManager
+	private var baseBoosted = false
+	private val equalizer: EqualizerFactory = EqualizerFactory().also {
+		BASS_BOOST.forEachIndexed { index, value -> it.setGain(index, value) }
+	}
 	private val scheduler: Scheduler
 
 	init {
@@ -80,6 +86,15 @@ class Controller(val parent: ConfigurationCache) {
 		if (min >= this.size)
 			return emptyArray()
 		return this.sliceArray(min until end)
+	}
+
+	fun player() = player
+
+	fun baseBoost(): Boolean {
+		if (baseBoosted) player.setFilterFactory(null) else player.setFilterFactory(equalizer)
+		baseBoosted = !baseBoosted
+
+		return baseBoosted
 	}
 
 	fun forward(duration: Int) = playing { it.position = it.position + duration;it.position }!!
