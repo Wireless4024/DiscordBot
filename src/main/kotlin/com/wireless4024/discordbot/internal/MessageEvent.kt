@@ -66,9 +66,9 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 			throw CommandError("You must be in voice channel to use command")
 	}
 
-    override fun toString(): String {
-        return msg
-    }
+	override fun toString(): String {
+		return msg
+	}
 }
 
 class ConsoleEvent(private val message: String) : MessageEvent(null) {
