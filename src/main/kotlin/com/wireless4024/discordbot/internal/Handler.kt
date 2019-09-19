@@ -7,7 +7,6 @@ import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.ChannelType.TEXT
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.exceptions.ContextException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit.SECONDS
@@ -43,8 +42,8 @@ class Handler : ListenerAdapter() {
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().queue()
-						} catch (e: ContextException) {
+								event.message.delete().complete()
+						} catch (e: Exception) {
 						}
 					}
 				}
@@ -58,8 +57,8 @@ class Handler : ListenerAdapter() {
 						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().queue()
-						} catch (e: ContextException) {
+								event.message.delete().complete()
+						} catch (e: Exception) {
 						}
 					}
 				}
