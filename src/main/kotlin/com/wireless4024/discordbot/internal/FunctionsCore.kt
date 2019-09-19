@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.exceptions.ContextException
 import org.apache.commons.cli.CommandLine
+import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 fun MessageChannel.send(msg: Any?, success: (Message) -> Unit? = {}) {
@@ -33,9 +34,9 @@ fun MessageChannel.send(msg: Any?, success: (Message) -> Unit? = {}) {
 }
 
 fun MessageChannel.sendThenDelete(
-		msg: Any?,
-		timeout: Long = Property.BASE_SLEEP_DELAY,
-		timeUnit: TimeUnit = TimeUnit.SECONDS
+	msg: Any?,
+	timeout: Long = Property.BASE_SLEEP_DELAY,
+	timeUnit: TimeUnit = TimeUnit.SECONDS
 ) {
 	this.send(msg) {
 		if (timeout > 0)
@@ -75,3 +76,17 @@ fun CommandLine.dropFirst(): CommandLine {
 }
 
 fun Any.isUnit() = this::class == Unit::class
+
+fun String.parseInt(): Int? {
+	if (this.startsWith("0b")) return this.drop(2).toIntOrNull(2)
+	if (this.startsWith("0x")) return this.drop(2).toIntOrNull(16)
+	if (this.startsWith("0")) return this.drop(1).toIntOrNull(8)
+	return this.toIntOrNull()
+}
+
+fun String.parseBigInteger(): BigInteger? {
+	if (this.startsWith("0b")) return this.drop(2).toBigIntegerOrNull(2)
+	if (this.startsWith("0x")) return this.drop(2).toBigIntegerOrNull(16)
+	if (this.startsWith("0")) return this.drop(1).toBigIntegerOrNull(8)
+	return this.toBigIntegerOrNull()
+}
