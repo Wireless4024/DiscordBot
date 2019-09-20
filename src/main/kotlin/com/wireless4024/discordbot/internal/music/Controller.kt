@@ -21,7 +21,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 class Controller(val parent: ConfigurationCache) {
-	private val BASS_BOOST = floatArrayOf(2.5f, 0.2f, 0.1f, 0.05f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0.1f, 0.15f, 0.25f)
+	private val BASS_BOOST = floatArrayOf(.3f, 0.3f, 0.2f, 0.05f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0.1f, 0.15f, 0.2f)
 	private var player: AudioPlayer
 	private var manager: AudioPlayerManager = parent.audioPlayerManager
 	private var bassBoosted = false
@@ -40,6 +40,7 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun queue(args: CommandLine, msgEV: MessageEvent) {
 		val text = args.args.joinToString(" ").trim()
+		if (text.isEmpty()) throw CommandError("missing song name or url")
 		if (Utils.urlExisted(text))
 			addTrack(text, msgEV)
 		else
