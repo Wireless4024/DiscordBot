@@ -14,10 +14,10 @@ class unicode : ICommandBase {
 				.map { it.parseInt() }.filterNotNull().map { it.toChar() }
 				.joinToString(", ", "[", "]")
 		if (args.hasOption("x"))
-			return args.args.joinToString(" ").replace(Regex("-+[^ ]+"), "").toCharArray()
+			return event.msg.replace(Regex(" -+[^ ]+"), "").toCharArray()
 				.map { it.toInt().toString(16) }
-		if (args.hasOption("c"))
-			return args.args.joinToString(" ").replace(Regex("-+[^ ]+"), "").toCharArray()
+		if (args.hasOption("b"))
+			return event.msg.replace(Regex(" -+[^ ]+"), "").toCharArray()
 				.map { it.toInt().toString(2) }
 		return event.msg.toCharArray().map { it.toInt() }
 	}
