@@ -78,6 +78,7 @@ fun CommandLine.dropFirst(): CommandLine {
 fun Any.isUnit() = this::class == Unit::class
 
 fun String.parseInt(): Int? {
+	if (isEmpty()) return 0
 	if (this.startsWith("0b", true)) return this.drop(2).toIntOrNull(2)
 	if (this.startsWith("0x", true)) return this.drop(2).toIntOrNull(16)
 	if (this.startsWith("0", true)) return this.drop(1).toIntOrNull(8)
@@ -85,6 +86,7 @@ fun String.parseInt(): Int? {
 }
 
 fun String.parseBigInteger(): BigInteger? {
+	if (isEmpty()) return BigInteger.ZERO
 	if (this.startsWith("0b", true)) return this.drop(2).toBigIntegerOrNull(2)
 	if (this.startsWith("0x", true)) return this.drop(2).toBigIntegerOrNull(16)
 	if (this.startsWith("0", true)) return this.drop(1).toBigIntegerOrNull(8)
