@@ -27,7 +27,7 @@ class Handler : ListenerAdapter() {
 				val messageText = message.contentDisplay.replace(noWhiteSpace, " ")
 				val ev = MessageEvent(event)
 				Utils.log("[${message.member!!.getFullName()}] : $messageText", deep = 2)
-				val re = Utils.ifRegex(message.contentRaw)
+				val re = if (message.contentRaw.startsWith('/')) Utils.ifRegex(message.contentRaw) else null
 				if (re != null) {
 					GlobalScope.launch1 {
 						MessageEvent(event).reply(re)
