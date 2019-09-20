@@ -6,6 +6,10 @@ import java.io.PrintWriter
 
 interface ICommandBase {
 	companion object {
+		@JvmStatic
+		val split = Regex("(?=\\S)[^\"\\s]*(?:\"[^\\\\\"]*(?:\\\\[\\s\\S][^\\\\\"]*)*\"[^\"\\s]*)*")
+
+		@JvmStatic
 		fun invokeCommand(cm: Invokable?, args: String, event: MessageEvent) {
 			if (cm == null) {
 				if (event.ev == null)
@@ -20,12 +24,7 @@ interface ICommandBase {
 					return
 				}
 				Utils.log("Invoking command '${cm.name()}'")
-				val msg = cm(
-						cm.parse(
-								args.replace(Regex("\\s+"), " ")
-										.split(" ").toTypedArray()
-						), event
-				)
+				val msg = cm(cm.parse(split.split(args).toTypedArray()), event)
 				if (!msg.isUnit())
 					event.reply = msg
 				else
@@ -35,10 +34,10 @@ interface ICommandBase {
 				event.reply = run {
 					val opt = CollectibleOutputStream()
 					HelpFormatter().printHelp(
-							PrintWriter(opt), 30,
-							cm.name(), "",
-							cm.genOptions(),
-							0, 0, ""
+						PrintWriter(opt), 30,
+						cm.name(), "",
+						cm.genOptions(),
+						0, 0, ""
 					)
 					opt.collect()
 				}
