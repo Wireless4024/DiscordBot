@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.exceptions.ContextException
 import org.apache.commons.cli.CommandLine
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
@@ -43,7 +42,7 @@ fun MessageChannel.sendThenDelete(
 		/*@formatter:off*/
 			try {
 				timeUnit.sleep(timeout).run { it.delete().queue() }
-			} catch (e: ContextException) {
+			} catch (e: Throwable) {
 			}
 		/*@formatter:on*/
 	}
