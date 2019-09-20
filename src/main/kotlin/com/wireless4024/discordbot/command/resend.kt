@@ -10,17 +10,20 @@ import org.apache.commons.cli.Option
 
 class resend : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
-		Utils.globalEvent.onMessageReceived(
-			MessageReceivedEvent(event.ev!!.jda, -1,
-			                     event.ch.getHistoryAround(event.ev!!.message, 40).complete()
-				                     .retrievedHistory.first {
-				                     it.author.idLong == event.member.idLong &&
-						                     !it.contentRaw.contains(
-							                     "resend", true
-						                     )
-			                     })
-		)
-		return ""
+		val message = event.ch
+			.getHistoryBefore(event.ev!!.message, 40)
+			.complete()
+			.retrievedHistory
+			.first {
+				it.author.idLong == event.member.idLong && !it.contentRaw.let {
+					it.isNotEmpty() && it.contains(
+						"resend",
+						true
+					)
+				}
+			}
+		Utils.globalEvent.onMessageReceived(MessageReceivedEvent(event.ev!!.jda, -1, message))
+		return "resend '${message.contentRaw}'"
 	}
 
 	override val options: List<Option> = listOf()
