@@ -1,6 +1,7 @@
 package com.wireless4024.discordbot.internal
 
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory
+import com.wireless4024.discordbot.command.string.regex
 import okhttp3.OkHttpClient
 import java.net.HttpURLConnection
 import java.net.URL
@@ -24,7 +25,7 @@ class Utils {
 		val HTTPClient = OkHttpClient()
 		@JvmStatic
 		val URL_Regex = Pattern.compile(
-				"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
+			"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
 		)
 
 		@JvmStatic
@@ -50,11 +51,25 @@ class Utils {
 		@JvmStatic
 		fun log(msg: Any?, level: Level = Level.INFO, deep: Int = 0) {
 			logger.logp(
-					level,
-					Thread.currentThread().stackTrace[3 + deep].className,
-					Thread.currentThread().stackTrace[3 + deep].methodName,
-					"@${Date()}\n" + msg.toString()
+				level,
+				Thread.currentThread().stackTrace[3 + deep].className,
+				Thread.currentThread().stackTrace[3 + deep].methodName,
+				"@${Date()}\n" + msg.toString()
 			)
+		}
+
+		@JvmStatic
+		val regexisregex =
+			Regex("^/((?![*+?])(?:[^\\r\\n\\[/\\\\]|\\\\.|\\[(?:[^\\r\\n\\]\\\\]|\\\\.)*])+)/")
+
+		@JvmStatic
+		fun ifRegex(string: String): String? {
+			val inputRegex = regexisregex.find(string) ?: return null
+			val operator = string.removeRange(inputRegex.range).trimStart().substringBefore(' ').trim()
+			if (operator == "") return null
+			val target = string.substringAfter(operator).trim()
+			if (target == "") return null
+			return regex.regex(inputRegex.value.trim('/'), operator, target).toString()
 		}
 
 		@JvmStatic

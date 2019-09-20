@@ -27,6 +27,19 @@ class Handler : ListenerAdapter() {
 				val messageText = message.contentDisplay.replace(noWhiteSpace, " ")
 				val ev = MessageEvent(event)
 				Utils.log("[${message.member!!.getFullName()}] : $messageText", deep = 2)
+				val re = Utils.ifRegex(message.contentRaw)
+				if (re != null) {
+					GlobalScope.launch1 {
+						MessageEvent(event).reply(re)
+						delay(Property.BASE_SLEEP_DELAY_MILLI)
+						try {
+							if (event.responseNumber != -1L)
+								event.message.delete().complete()
+						} catch (e: Exception) {
+						}
+					}
+					return@launch
+				}
 				if (FastFunction.startWith(messageText, '=')) {
 					val number = Utils.execute(5,
 					                           SECONDS,
