@@ -1,4 +1,4 @@
-package com.wireless4024.discordbot.command
+package com.wireless4024.discordbot.command.string
 
 import com.wireless4024.discordbot.internal.ICommandBase
 import com.wireless4024.discordbot.internal.MessageEvent
