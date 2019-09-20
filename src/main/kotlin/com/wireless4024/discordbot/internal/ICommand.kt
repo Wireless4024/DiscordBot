@@ -24,7 +24,7 @@ interface ICommandBase {
 					return
 				}
 				Utils.log("Invoking command '${cm.name()}'")
-				val msg = cm(cm.parse(split.split(args).toTypedArray()), event)
+				val msg = cm(cm.parse(split.findAll(args).map { it.value }.toList().toTypedArray()), event)
 				if (!msg.isUnit())
 					event.reply = msg
 				else
