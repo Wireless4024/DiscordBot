@@ -1,4 +1,4 @@
-package com.wireless4024.discordbot.command
+package com.wireless4024.discordbot.command.numeric
 
 import com.wireless4024.discordbot.internal.*
 import com.wireless4024.discordbot.internal.Property.Companion.Permission

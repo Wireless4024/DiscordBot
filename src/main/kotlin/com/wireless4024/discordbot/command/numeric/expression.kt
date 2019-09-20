@@ -1,4 +1,4 @@
-package com.wireless4024.discordbot.command
+package com.wireless4024.discordbot.command.numeric
 
 import com.keelar.exprk.Expressions
 import com.wireless4024.discordbot.internal.CommandError
