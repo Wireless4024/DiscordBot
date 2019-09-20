@@ -33,7 +33,8 @@ class regex : ICommandBase {
 						regex.toRegex().replaceFirst(this[0], this[1])
 					} else regex.toRegex().replaceFirst(target, replacement)
 					"split"         -> if (replacement == null) with(split(target)) {
-						regex.toRegex().split(this[0], this[1].parseInt() ?: 0)
+						if (this[1].parseInt() == null) regex.toRegex().split(target)
+						else regex.toRegex().split(this[0], this[1].parseInt() ?: 0)
 					} else regex.toRegex().split(target, replacement.parseInt() ?: 0)
 					else            -> "invalid operation"
 				}
