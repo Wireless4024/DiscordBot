@@ -23,3 +23,22 @@ class tolowercase : ICommandBase {
 	override val options: List<Option> = listOf()
 	override val permission: Int = Permission.ANY
 }
+
+class torandomcase : ICommandBase {
+	override fun invoke(args: CommandLine, event: MessageEvent): Any {
+		val rnd = java.util.Random()
+		return String(event.msg.toCharArray().map { if (rnd.nextBoolean()) it.toUpperCase() else it.toLowerCase() }.toCharArray())
+	}
+
+	override val options: List<Option> = listOf()
+	override val permission: Int = Permission.ANY
+}
+
+class invertcase : ICommandBase {
+	override fun invoke(args: CommandLine, event: MessageEvent): Any {
+		return String(event.msg.toCharArray().map { if (it.isLowerCase()) it.toUpperCase() else it.toLowerCase() }.toCharArray())
+	}
+
+	override val options: List<Option> = listOf()
+	override val permission: Int = Permission.ANY
+}
