@@ -61,9 +61,9 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	}
 
 	@Command
-	fun bassboost(event: MessageEvent): String {
+	fun bassboost(args: CommandLine, event: MessageEvent): String {
 		event.ensureVoiceConnected()
-		return "bass boost : ${if (event.musicController.bassBoost()) "on" else "off"}"
+		return "bass boost : ${if (event.musicController.bassBoost(args[0]?.parseInt())) "on" else "off"}"
 	}
 
 	@Command

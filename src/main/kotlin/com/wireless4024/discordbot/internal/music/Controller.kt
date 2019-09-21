@@ -21,12 +21,16 @@ import kotlin.math.max
 import kotlin.math.min
 
 class Controller(val parent: ConfigurationCache) {
-	private val BASS_BOOST = floatArrayOf(.3f, 0.3f, 0.2f, 0.05f, 0.0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0.1f, 0.15f, 0.2f)
+	private val BASS_BOOST = floatArrayOf(.3f, .3f, .2f, .05f, .0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, .1f, .15f, .2f)
+	private val BASS_BOOST2 = floatArrayOf(.4f, .35f, .3f, .2f, .1f, .5f, 0f, 0f, 0f, 0f, 0f, 0f, .1f, .2f, .25f)
 	private var player: AudioPlayer
 	private var manager: AudioPlayerManager = parent.audioPlayerManager
 	private var bassBoosted = false
-	private val equalizer: EqualizerFactory = EqualizerFactory().also {
+	private val bassboost: EqualizerFactory = EqualizerFactory().also {
 		BASS_BOOST.forEachIndexed { index, value -> it.setGain(index, value) }
+	}
+	private val bassboost2: EqualizerFactory = EqualizerFactory().also {
+		BASS_BOOST2.forEachIndexed { index, value -> it.setGain(index, value) }
 	}
 	private val scheduler: Scheduler
 
@@ -91,10 +95,15 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun player() = player
 
-	fun bassBoost(): Boolean {
-		if (bassBoosted) player.setFilterFactory(null) else player.setFilterFactory(equalizer)
-		bassBoosted = !bassBoosted
-
+	fun bassBoost(level: Int?): Boolean {
+		bassBoosted = if (bassBoosted && (level == null || level == 0)) {
+			player.setFilterFactory(null)
+			false
+		} else {
+			if (level == 2) player.setFilterFactory(bassboost2)
+			else player.setFilterFactory(bassboost)
+			true
+		}
 		return bassBoosted
 	}
 
