@@ -25,7 +25,7 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 	val guild
 		get() = this.e!!.guild
 	val configuration
-		get() = ConfigurationCache.get(guild)
+		get() = ConfigurationCache.get(guild, this)
 	val voiceChannel
 		get() = member.voiceState?.channel
 	val musicController = configuration.musicController

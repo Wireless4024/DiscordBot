@@ -1,5 +1,6 @@
 package com.wireless4024.discordbot.internal
 
+import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration.ResamplingQuality.LOW
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.wireless4024.discordbot.internal.music.Controller
@@ -8,18 +9,24 @@ import net.dv8tion.jda.api.Region.UNKNOWN
 import net.dv8tion.jda.api.audio.AudioSendHandler
 import net.dv8tion.jda.api.entities.Guild
 
-class ConfigurationCache private constructor(var guild: Guild) {
+class ConfigurationCache private constructor(var guild: Guild, var lastEvent: MessageEvent? = null) {
 	companion object {
 		private val Cache = mutableMapOf<Long, ConfigurationCache>()
 
-		fun get(guild: Guild): ConfigurationCache {
+		fun get(guild: Guild, lastEvent: MessageEvent): ConfigurationCache {
 			if (!Cache.containsKey(guild.idLong))
-				Cache[guild.idLong] = ConfigurationCache(guild)
-			return Cache[guild.idLong]!!.update(guild)
+				Cache[guild.idLong] = ConfigurationCache(guild, lastEvent)
+			return Cache[guild.idLong]!!.update(guild, lastEvent)
 		}
 	}
 
-	val audioPlayerManager = DefaultAudioPlayerManager().also { AudioSourceManagers.registerRemoteSources(it) }
+	val audioPlayerManager = DefaultAudioPlayerManager().also {
+		AudioSourceManagers.registerRemoteSources(it)
+		val configuration = it.configuration
+		configuration.resamplingQuality = LOW
+		configuration.opusEncodingQuality = 10
+		configuration.isFilterHotSwapEnabled = true
+	}
 
 	val musicController = Controller(this)
 
@@ -36,9 +43,10 @@ class ConfigurationCache private constructor(var guild: Guild) {
 
 	fun closeAudioConnection() = audioManager.closeAudioConnection()
 
-	fun update(guild: Guild? = null): ConfigurationCache = this.also {
+	fun update(guild: Guild? = null, event: MessageEvent): ConfigurationCache = this.also {
 		if (guild != null)
 			this.guild = guild
+		lastEvent = event
 	}
 
 	fun ban(id: String, delay: Int = 0, reason: String = "") {
