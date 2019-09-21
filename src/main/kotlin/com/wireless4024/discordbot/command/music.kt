@@ -111,7 +111,7 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 		return "now playing at ${Utils.toReadableFormatTime(
 			event.musicController.forward(
 				(args[0]?.toIntOrNull()
-					?: 0) * 1000
+					?: 5) * 1000
 			)
 		)}"
 	}
@@ -121,7 +121,7 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 		return "now playing at ${Utils.toReadableFormatTime(
 			event.musicController.back(
 				(args[0]?.toIntOrNull()
-					?: 0) * 1000
+					?: 5) * 1000
 			)
 		)}"
 	}
