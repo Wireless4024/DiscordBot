@@ -56,7 +56,8 @@ internal class InvokableInstance(val cm: ICommandBase) : Invokable {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
 		cm(args, event)
 	} catch (e: Exception) {
-		e.printStackTrace()
+		if (Property.DEBUG)
+			e.printStackTrace()
 		e.cause?.message ?: e.message ?: ""
 	}
 }
@@ -81,7 +82,8 @@ internal class InvokableMethod(val method: Method, val parent: ICommandBase) : I
 			else -> method.invoke(parent, args, event)
 		}
 	} catch (e: java.lang.reflect.InvocationTargetException) {
-		e.printStackTrace()
+		if (Property.DEBUG)
+			e.printStackTrace()
 		e.cause?.message ?: e.message ?: ""
 	}
 }

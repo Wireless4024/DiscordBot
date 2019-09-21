@@ -30,7 +30,8 @@ interface ICommandBase {
 				else
 					Utils.log("command '${cm.name()}' return nothing..")
 			} catch (e: ParseException) {
-				e.printStackTrace()
+				if (Property.DEBUG)
+					e.printStackTrace()
 				event.reply = run {
 					val opt = CollectibleOutputStream()
 					HelpFormatter().printHelp(
@@ -42,7 +43,8 @@ interface ICommandBase {
 					opt.collect()
 				}
 			} catch (e: Throwable) {
-				e.printStackTrace()
+				if (Property.DEBUG)
+					e.printStackTrace()
 				event.reply = e
 			}
 		}

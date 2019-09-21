@@ -12,6 +12,8 @@ interface Property {
 		@JvmStatic
 		val LOGGER_NAME = "DiscordBot"
 		@JvmStatic
+		val DEBUG = false
+		@JvmStatic
 		val DEV_LIST = listOf(298273616704045057L)
 		@JvmStatic
 		val BASE_SLEEP_DELAY: Long = 30
