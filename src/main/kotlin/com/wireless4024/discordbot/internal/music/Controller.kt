@@ -139,6 +139,8 @@ class Controller(val parent: ConfigurationCache) {
 		return scheduler.previous()
 	}
 
+	private fun <E> List<E>.limit(count: Int) = this.subList(0, min(count - 1, this.size - 1))
+
 	/**
 	 * @param pickfirst Boolean if search result ticked as playlist should player add song as single track
 	 */
@@ -160,7 +162,7 @@ class Controller(val parent: ConfigurationCache) {
 
 				if (pickfirst)
 					return this.trackLoaded(playlist.selectedTrack ?: playlist.tracks.let {
-						it.firstOrNull {
+						it.limit(3).firstOrNull {
 							it.info.title.contains("audio", true) &&
 									!it.info.title.contains("live", true) &&
 									!it.info.title.contains("performance", true)
