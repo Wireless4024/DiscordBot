@@ -22,7 +22,7 @@ class regex : ICommandBase {
 		fun regex(regex: String, operation: String, target: String, replacement: String? = null): Any {
 			return Utils.execute(Property.BASE_SLEEP_DELAY shl 1, SECONDS, Callable {
 				when (operation.toLowerCase()) {
-					"find"          -> regex.toRegex().find(target) ?: ""
+					"find"          -> regex.toRegex().find(target)?.value ?: ""
 					"in", "findall" -> regex.toRegex().findAll(target).map { it.value }.joinToString(", ", "[", "]")
 					"~", "match"    -> regex.toRegex().containsMatchIn(target)
 					"~=", "matchs"  -> regex.toRegex().matches(target)
