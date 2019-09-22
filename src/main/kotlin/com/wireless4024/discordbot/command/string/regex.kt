@@ -48,7 +48,13 @@ class regex : ICommandBase {
 			if (breakPoint == -1)
 				return arrayOf(base, "")
 			val end = ICommandBase.split.findAll(base).last()
-			return arrayOf(base.removeRange(end.range), end.value.trim(' ', '"'))
+			return arrayOf(base.removeRange(end.range), trim(end.value))
+		}
+
+		private fun trim(word: String): String {
+			if (word.startsWith('"') && word.endsWith('"'))
+				return word.drop(1).dropLast(1)
+			return word.trim()
 		}
 	}
 }
