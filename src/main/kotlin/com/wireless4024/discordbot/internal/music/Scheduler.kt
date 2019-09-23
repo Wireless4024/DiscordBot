@@ -73,7 +73,7 @@ class Scheduler(
 	val queueDuation
 		get() = kotlin.run {
 			if (queue.isEmpty())
-				return@run 0
+				return@run 0L
 			if (queue.size != 0 && repeat != NO)
 				return@run Long.MAX_VALUE
 			var duration = 0L
@@ -101,6 +101,9 @@ class Scheduler(
 
 	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
 		lastTrack?.run { this@Scheduler.lastTrack = this }
+
+		player.isPaused = parent.parent.audioManager.connectedChannel?.members?.size ?: 0 < 2
+
 		if (repeat != SINGLE || lastTrack == null) {
 			if (queue.isNotEmpty() && queue.first != null) {
 				if (player.startTrack(queue.first, noInterrupt))
