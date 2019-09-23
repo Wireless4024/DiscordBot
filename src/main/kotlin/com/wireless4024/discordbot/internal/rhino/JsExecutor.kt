@@ -10,6 +10,7 @@ class JsExecutor(val parent: ConfigurationCache) {
 
 	init {
 		engine.setMaxDuration(Property.COMMAND_TIMEOUT * 1000)
+		engine.setInstructionLimit(50000)
 		engine.inject("std", STD)
 		engine.evalWithGlobalScope(
 			parent.guild.id, """
@@ -23,7 +24,7 @@ function println(val){std.println(val)}
 		try {
 			engine.eval(parent.guild.id, js)
 		} catch (e: Throwable) {
-			STD.print("\n" + (e.cause?.message ?: e.message ?: ""))
+			STD.print("\n" + (e.cause?.toString() ?: e.toString()))
 		}
 		return STD.collectSTDOUT()
 	}

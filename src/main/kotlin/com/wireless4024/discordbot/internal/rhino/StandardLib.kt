@@ -14,6 +14,6 @@ class StandardLib {
 	fun collectSTDOUT(): String {
 		val str = stdout.toString()
 		stdout.clear()
-		return str.trim()
+		return str.trim().let { if (it.isEmpty()) "nothing return from your function" else it }
 	}
 }
