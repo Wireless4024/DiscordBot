@@ -44,7 +44,7 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun queue(args: CommandLine, msgEV: MessageEvent) {
 		val text = args.args.joinToString(" ").trim()
-		if (text.isEmpty()) throw CommandError("missing song name or url")
+		if (text.isEmpty()) throw CommandError(if (pause()) "resume playing" else "player paused")
 		if (Utils.urlExisted(text))
 			addTrack(text, msgEV)
 		else
