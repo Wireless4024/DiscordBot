@@ -3,11 +3,14 @@ package com.wireless4024.discordbot.command
 import com.wireless4024.discordbot.internal.ICommandBase
 import com.wireless4024.discordbot.internal.MessageEvent
 import com.wireless4024.discordbot.internal.Property
+import com.wireless4024.discordbot.internal.SkipArguments
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 import kotlin.system.exitProcess
 
+@SkipArguments
 class exit : ICommandBase {
+
 	override fun invoke(args: CommandLine, event: MessageEvent): Nothing {
 		event.ev!!.message.delete().complete()
 		exitProcess(0)

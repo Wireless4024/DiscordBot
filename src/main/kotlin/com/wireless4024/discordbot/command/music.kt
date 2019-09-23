@@ -9,34 +9,37 @@ import org.apache.commons.cli.Option
 class music : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
 		return when (args[0]) {
-			"play", "p"      -> p(args.dropFirst(), event)
+			"play", "p"      -> p(event)
 			"join", "j"      -> j(event)
 			"leave", "l"     -> leave(event)
 			"skip", "s"      -> s(event)
-			"vol", "v"       -> v(args.dropFirst(), event)
-			"queue", "q"     -> queue(args.dropFirst(), event)
+			"vol", "v"       -> v(event)
+			"queue", "q"     -> queue(event)
 			"clear", "c"     -> clear(event)
 			"pause"          -> pause(event)
-			"repeat", "r"    -> repeat(args.dropFirst(), event)
-			"remove", "d"    -> remove(args.dropFirst(), event)
+			"repeat", "r"    -> repeat(event)
+			"remove", "d"    -> remove(event)
 			"previous", "pv" -> previous(event)
-			"forward", "fw"  -> forward(args.dropFirst(), event)
-			"backward", "bw" -> backward(args.dropFirst(), event)
-			"seek"           -> seek(args.dropFirst(), event)
+			"forward", "fw"  -> forward(event)
+			"backward", "bw" -> backward(event)
+			"seek"           -> seek(event)
 			"now"            -> now(event)
 			else             -> ""
 		}
 	}
 
 	@Command
-	fun p(args: CommandLine, event: MessageEvent): String =
-		event.ensureVoiceConnected { event.musicController.queue(args, event);"" }
+	@SkipArguments
+	fun p(event: MessageEvent): String =
+		event.ensureVoiceConnected { event.musicController.queue(event);"" }
 
 	@Command
+	@SkipArguments
 	fun j(event: MessageEvent): String =
 		event.ensureVoiceConnected { "connecting to '${event.musicController.join(event)}'" }
 
 	@Command
+	@SkipArguments
 	fun s(event: MessageEvent): String {
 		event.ensureVoiceConnected()
 		val playing = event.musicController.skip()
@@ -44,12 +47,14 @@ class music : ICommandBase {
 	}
 
 	@Command
-	fun v(args: CommandLine, event: MessageEvent): String {
+	@SkipArguments
+	fun v(event: MessageEvent): String {
 		event.ensureVoiceConnected()
-		return "volume is ${event.musicController.volume(args[0]?.toIntOrNull() ?: 0)}"
+		return "volume is ${event.musicController.volume(event.msg.toIntOrNull() ?: 0)}"
 	}
 
 	@Command
+	@SkipArguments
 	fun now(event: MessageEvent): String {
 		val player = event.musicController.player().playingTrack ?: return "not playing"
 		val playingInfo = player.info
@@ -61,75 +66,80 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	}
 
 	@Command
-	fun bassboost(args: CommandLine, event: MessageEvent): String {
+	@SkipArguments
+	fun bassboost(event: MessageEvent): String {
 		event.ensureVoiceConnected()
-		return "bass boost : ${if (event.musicController.bassBoost(args[0]?.parseInt())) "on" else "off"}"
+		return "bass boost : ${if (event.musicController.bassBoost(event.msg.parseInt())) "on" else "off"}"
 	}
 
 	@Command
+	@SkipArguments
 	fun leave(event: MessageEvent): String {
 		event.ensureVoiceConnected()
 		return "I'm leaving ${event.musicController.leave()}"
 	}
 
 	@Command
+	@SkipArguments
 	fun clear(event: MessageEvent): String {
 		event.musicController.clear()
 		return "cleared playlist"
 	}
 
 	@Command
-	fun queue(args: CommandLine, event: MessageEvent): MessageEmbed {
-		return event.musicController.listAsEmbed(args.args.getOrNull(0)?.toIntOrNull() ?: 1)
+	@SkipArguments
+	fun queue(event: MessageEvent): MessageEmbed {
+		return event.musicController.listAsEmbed(event.msg.toIntOrNull() ?: 1)
 	}
 
 	@Command
+	@SkipArguments
 	fun pause(event: MessageEvent) = if (event.musicController.pause(event)) "resume playing" else "player paused"
 
 	@Command
-	fun repeat(args: CommandLine, event: MessageEvent): String {
-		return "repeat: ${event.musicController.repeat(args[0] ?: "")}"
+	@SkipArguments
+	fun repeat(event: MessageEvent): String {
+		return "repeat: ${event.musicController.repeat(event.msg)}"
 	}
 
 	@Command
-	fun remove(args: CommandLine, event: MessageEvent): String {
+	@SkipArguments
+	fun remove(event: MessageEvent): String {
 		return "removed track : ${event.musicController.removeQueue(
-			args.args.getOrNull(0)?.toIntOrNull()
-				?: throw CommandError("invalid index")
+			event.msg.toIntOrNull() ?: throw CommandError("invalid index")
 		).info.title}"
 	}
 
 	@Command
+	@SkipArguments
 	fun previous(event: MessageEvent): String {
 		return event.musicController.previous(event.voiceChannel)?.let { "now playing : $it" } ?: ""
 	}
 
 	@Command
-	fun forward(args: CommandLine, event: MessageEvent): String {
+	@SkipArguments
+	fun forward(event: MessageEvent): String {
 		return "now playing at ${Utils.toReadableFormatTime(
 			event.musicController.forward(
-				(args[0]?.toIntOrNull()
-					?: 5) * 1000
+				(event.msg.toIntOrNull() ?: 5) * 1000
 			)
 		)}"
 	}
 
 	@Command
-	fun backward(args: CommandLine, event: MessageEvent): String {
+	@SkipArguments
+	fun backward(event: MessageEvent): String {
 		return "now playing at ${Utils.toReadableFormatTime(
-			event.musicController.back(
-				(args[0]?.toIntOrNull()
-					?: 5) * 1000
-			)
+			event.musicController.back((event.msg.toIntOrNull() ?: 5) * 1000)
 		)}"
 	}
 
 	@Command
-	fun seek(args: CommandLine, event: MessageEvent): String {
+	@SkipArguments
+	fun seek(event: MessageEvent): String {
 		return "now playing at ${Utils.toReadableFormatTime(
 			event.musicController.seek(
-				(args[0]?.toLongOrNull()
-					?: 0) * 1000
+				(event.msg.toLongOrNull() ?: 0) * 1000
 			)
 		)}"
 	}

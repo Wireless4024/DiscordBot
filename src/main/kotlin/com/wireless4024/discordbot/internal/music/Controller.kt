@@ -15,14 +15,13 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.managers.AudioManager
-import org.apache.commons.cli.CommandLine
 import java.awt.Color
 import kotlin.math.max
 import kotlin.math.min
 
 class Controller(val parent: ConfigurationCache) {
-	private val BASS_BOOST = floatArrayOf(.3f, .3f, .2f, .05f, .0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, .1f, .15f, .2f)
-	private val BASS_BOOST2 = floatArrayOf(.4f, .35f, .3f, .2f, .1f, .5f, 0f, 0f, 0f, 0f, 0f, 0f, .1f, .2f, .25f)
+	private val BASS_BOOST = floatArrayOf(.2f, .15f, .1f, .05f, .0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, .05f, .1f, .15f)
+	private val BASS_BOOST2 = floatArrayOf(.3f, .25f, .2f, .15f, .1f, .5f, 0f, 0f, 0f, 0f, 0f, 0f, .1f, .2f, .25f)
 	private var player: AudioPlayer
 	private var manager: AudioPlayerManager = parent.audioPlayerManager
 	private var bassBoosted = false
@@ -42,8 +41,8 @@ class Controller(val parent: ConfigurationCache) {
 		player.addListener(scheduler)
 	}
 
-	fun queue(args: CommandLine, msgEV: MessageEvent) {
-		val text = args.args.joinToString(" ").trim()
+	fun queue(msgEV: MessageEvent) {
+		val text = msgEV.msg
 		if (text.isEmpty()) throw CommandError(if (pause(msgEV)) "resume playing" else "player paused")
 		if (Utils.urlExisted(text))
 			addTrack(text, msgEV)
