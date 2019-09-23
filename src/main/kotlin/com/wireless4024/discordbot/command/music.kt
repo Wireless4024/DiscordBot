@@ -17,7 +17,7 @@ class music : ICommandBase {
 			"queue", "q"     -> queue(args.dropFirst(), event)
 			"clear", "c"     -> clear(event)
 			"pause"          -> pause(event)
-			"repeat", "r"    -> repeat(event)
+			"repeat", "r"    -> repeat(args, event)
 			"remove", "d"    -> remove(args.dropFirst(), event)
 			"previous", "pv" -> previous(event)
 			"forward", "fw"  -> forward(args.dropFirst(), event)
@@ -89,8 +89,8 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	}
 
 	@Command
-	fun repeat(event: MessageEvent): String {
-		return if (event.musicController.repeat()) "repeat : on" else "repeat : off"
+	fun repeat(args: CommandLine, event: MessageEvent): String {
+		return "repeat: ${event.musicController.repeat(args[0] ?: "")}"
 	}
 
 	@Command

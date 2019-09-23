@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import com.wireless4024.discordbot.internal.CommandError
 import com.wireless4024.discordbot.internal.Property
+import com.wireless4024.discordbot.internal.music.Repeat.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -13,7 +14,6 @@ import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.concurrent.BlockingDeque
 import java.util.concurrent.LinkedBlockingDeque
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 class Scheduler(
@@ -23,13 +23,13 @@ class Scheduler(
 
 	private var queue: BlockingDeque<AudioTrack>
 	private val boxMessage: AtomicReference<Message>
-	private val repeat: AtomicBoolean
+	private var repeat: Repeat
 	private var lastTrack: AudioTrack? = null
 
 	init {
 		this.queue = LinkedBlockingDeque()
 		this.boxMessage = AtomicReference()
-		this.repeat = AtomicBoolean()
+		this.repeat = NO
 	}
 
 	fun addToQueue(vararg audioTrack: AudioTrack) {
@@ -78,7 +78,14 @@ class Scheduler(
 			duration
 		}
 
-	fun repeat() = !repeat.getAndSet(!repeat.get())
+	fun repeat(kw: String = ""): String {
+		repeat = when {
+			kw.startsWith("on", false) || kw.startsWith("si", false) -> SINGLE
+			kw.startsWith("al", false) || kw.startsWith("fu", false) -> ALL
+			else                                                     -> if (repeat == NO) ALL else NO
+		}
+		return repeat.name
+	}
 
 	fun remove(pos: Int): AudioTrack {
 		if (pos < 1 || pos > queue.size)
@@ -89,12 +96,13 @@ class Scheduler(
 	}
 
 	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
-		with(lastTrack) { this@Scheduler.lastTrack = this }
-		if (!repeat.get() || lastTrack == null) {
+		lastTrack?.run { this@Scheduler.lastTrack = this }
+		if (repeat != SINGLE || lastTrack == null) {
 			if (queue.isNotEmpty() && queue.first != null) {
-				if (!player.startTrack(queue.first, noInterrupt))
-					queue.addFirst(queue.first)
-				queue.removeFirst()
+				if (player.startTrack(queue.first, noInterrupt))
+					queue.removeFirst()
+				if (repeat == ALL && lastTrack != null)
+					queue.addLast(lastTrack.makeClone())
 			} else {
 				player.stopTrack()
 				GlobalScope.launch {
@@ -104,7 +112,7 @@ class Scheduler(
 				}
 				// messageDispatcher.sendMessage("Queue finished.")
 			}
-		} else player.startTrack(lastTrack.makeClone(), true)
+		} else player.startTrack(lastTrack.makeClone(), noInterrupt)
 		return player.playingTrack?.info?.title
 	}
 
@@ -132,4 +140,10 @@ class Scheduler(
 	override fun onPlayerPause(player: AudioPlayer?) {
 
 	}
+}
+
+enum class Repeat {
+	NO,
+	SINGLE,
+	ALL
 }

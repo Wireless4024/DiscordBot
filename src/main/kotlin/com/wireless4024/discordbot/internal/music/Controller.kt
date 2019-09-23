@@ -119,7 +119,7 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun pause() = player.isPaused.also { player.isPaused = !it }
 
-	fun repeat() = scheduler.repeat()
+	fun repeat(mode: String = "") = scheduler.repeat(mode)
 
 	fun removeQueue(pos: Int) = scheduler.remove(pos)
 
@@ -173,9 +173,7 @@ class Controller(val parent: ConfigurationCache) {
 				var len = 0
 				var duration = 0L
 				tracks.slice(
-					(if (playlist.selectedTrack == null) 0 else tracks.indexOf(
-						playlist.selectedTrack
-					)) until tracks.size
+					(if (playlist.selectedTrack == null) 0 else tracks.indexOf(playlist.selectedTrack))..tracks.lastIndex
 				).forEach { ++len;duration += it.duration;scheduler.addToQueue(it) }.also {
 					event.reply = "added $len tracks duration ${Utils.toReadableFormatTime(duration)}"
 				}
