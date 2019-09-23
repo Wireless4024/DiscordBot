@@ -41,6 +41,7 @@ interface Invokable {
 	fun name(): String
 	fun parse(msg: Array<String>): CommandLine
 	fun genOptions(): Options
+	fun needArguments(): Boolean
 	operator fun invoke(args: CommandLine, event: MessageEvent): Any
 }
 
@@ -53,6 +54,7 @@ internal class InvokableInstance(val cm: ICommandBase) : Invokable {
 	override fun name(): String = cm.name()
 	override fun parse(msg: Array<String>): CommandLine = cm.parse(msg)
 	override fun genOptions(): Options = cm.genOptions()
+	override fun needArguments(): Boolean = !cm.javaClass.isAnnotationPresent(SkipArguments::class.java)
 	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
 		cm(args, event)
 	} catch (e: Exception) {
@@ -71,6 +73,7 @@ internal class InvokableMethod(val method: Method, val parent: ICommandBase) : I
 	override val permission: Int = method.getAnnotation(Command::class.java).permission
 	override fun name(): String = method.name
 	override fun parse(msg: Array<String>): CommandLine = parent.parse(msg)
+	override fun needArguments(): Boolean = !method.isAnnotationPresent(SkipArguments::class.java)
 	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
 		when (method.parameterCount) {
 			0    -> method.invoke(parent)
