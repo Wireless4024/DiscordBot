@@ -8,6 +8,8 @@ interface ICommandBase {
 	companion object {
 		@JvmStatic
 		val split = Regex("(?=\\S)[^\"\\s]*(?:\"[^\\\\\"]*(?:\\\\[\\s\\S][^\\\\\"]*)*\"[^\"\\s]*)*")
+		@JvmStatic
+		val EmptyCommandLine = DefaultParser().parse(Options(), emptyArray())
 
 		@JvmStatic
 		fun invokeCommand(cm: Invokable?, args: String, event: MessageEvent) {
@@ -24,7 +26,10 @@ interface ICommandBase {
 					return
 				}
 				Utils.log("Invoking command '${cm.name()}'")
-				val msg = cm(cm.parse(split.findAll(args).map { it.value }.toList().toTypedArray()), event)
+				val msg = cm(
+					if (cm.needArguments()) cm.parse(split.findAll(args).map { it.value }.toList().toTypedArray()) else EmptyCommandLine,
+					event
+				)
 				if (!msg.isUnit())
 					event.reply = msg
 				else
