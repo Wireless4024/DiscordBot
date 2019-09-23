@@ -38,7 +38,10 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 					if (!permanent) {
 						TimeUnit.SECONDS.sleep(Property.BASE_SLEEP_DELAY)
 						Utils.log("-> [delete]\t'${it.contentDisplay}'")
-						it.delete().queue()
+						try {
+							it.delete().complete()
+						} catch (e: Exception) {
+						}
 					}
 				}
 			}
