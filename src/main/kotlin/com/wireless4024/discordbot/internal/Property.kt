@@ -16,6 +16,8 @@ interface Property {
 		@JvmStatic
 		val DEV_LIST = listOf(298273616704045057L)
 		@JvmStatic
+		val COMMAND_TIMEOUT = 5
+		@JvmStatic
 		val BASE_SLEEP_DELAY: Long = 30
 		@JvmStatic
 		val BASE_SLEEP_DELAY_MILLI = BASE_SLEEP_DELAY * 1000L
