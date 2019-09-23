@@ -69,7 +69,8 @@ operator fun CommandLine.get(option: String): String? {
 
 fun CommandLine.dropFirst(): CommandLine {
 	return CommandLine.Builder().also {
-		this.args.drop(1).forEach { i -> it.addArg(i) }
+		if (args.isNotEmpty())
+			this.args.drop(1).forEach { i -> it.addArg(i) }
 		this.options.forEach { i -> it.addOption(i) }
 	}.build()
 }
