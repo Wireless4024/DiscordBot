@@ -72,7 +72,9 @@ class Scheduler(
 
 	val queueDuation
 		get() = kotlin.run {
-			if (repeat != NO)
+			if (queue.isEmpty())
+				return@run 0
+			if (queue.size != 0 && repeat != NO)
 				return@run Long.MAX_VALUE
 			var duration = 0L
 			for (a in queue)
