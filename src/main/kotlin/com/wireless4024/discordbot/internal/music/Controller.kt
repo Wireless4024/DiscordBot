@@ -44,7 +44,7 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun queue(args: CommandLine, msgEV: MessageEvent) {
 		val text = args.args.joinToString(" ").trim()
-		if (text.isEmpty()) throw CommandError(if (pause()) "resume playing" else "player paused")
+		if (text.isEmpty()) throw CommandError(if (pause(msgEV)) "resume playing" else "player paused")
 		if (Utils.urlExisted(text))
 			addTrack(text, msgEV)
 		else
@@ -54,7 +54,11 @@ class Controller(val parent: ConfigurationCache) {
 	fun join(msgEV: MessageEvent) = connect(parent.audioManager, msgEV.member.voiceState?.channel, true)
 
 	fun leave() =
-		with(parent.audioManager) { (this.connectedChannel?.name).also { scheduler.clear();this.closeAudioConnection() } }
+		with(parent.audioManager) {
+			(this.connectedChannel?.name).also {
+				player.isPaused = true;this.closeAudioConnection()
+			}
+		}
 			?: throw CommandError("wait dude I i can't leave I MOST BE IN VOICE CHANNEL TO USE THIS COMMAND!")
 
 	fun skip() = scheduler.skip()
@@ -117,7 +121,13 @@ class Controller(val parent: ConfigurationCache) {
 
 	fun back(duration: Int) = playing { it.position = max(0, it.position - duration); it.position }!!
 
-	fun pause() = player.isPaused.also { player.isPaused = !it }
+	fun pause(event: MessageEvent) = player.isPaused.also {
+		player.isPaused = !it
+		if (it && (player.playingTrack != null || scheduler.size() > 0)) {
+			connect(parent.audioManager, event.member.voiceState?.channel)
+			player.isPaused = false
+		}
+	}
 
 	fun repeat(mode: String = "") = scheduler.repeat(mode)
 

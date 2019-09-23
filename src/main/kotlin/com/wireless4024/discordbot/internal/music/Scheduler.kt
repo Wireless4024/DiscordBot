@@ -102,7 +102,8 @@ class Scheduler(
 	private fun startNextTrack(noInterrupt: Boolean, lastTrack: AudioTrack? = null): String? {
 		lastTrack?.run { this@Scheduler.lastTrack = this }
 
-		player.isPaused = parent.parent.audioManager.connectedChannel?.members?.size ?: 0 < 2
+		val am = parent.parent.audioManager
+		player.isPaused = (am.connectedChannel?.members?.size ?: 2) < 2 && !am.isAttemptingToConnect
 
 		if (repeat != SINGLE || lastTrack == null) {
 			if (queue.isNotEmpty() && queue.first != null) {

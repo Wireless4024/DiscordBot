@@ -84,7 +84,7 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	}
 
 	@Command
-	fun pause(event: MessageEvent) = if (event.musicController.pause()) "resume playing" else "player paused"
+	fun pause(event: MessageEvent) = if (event.musicController.pause(event)) "resume playing" else "player paused"
 
 	@Command
 	fun repeat(args: CommandLine, event: MessageEvent): String {
