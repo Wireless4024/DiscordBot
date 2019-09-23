@@ -17,7 +17,7 @@ class music : ICommandBase {
 			"queue", "q"     -> queue(args.dropFirst(), event)
 			"clear", "c"     -> clear(event)
 			"pause"          -> pause(event)
-			"repeat", "r"    -> repeat(args, event)
+			"repeat", "r"    -> repeat(args.dropFirst(), event)
 			"remove", "d"    -> remove(args.dropFirst(), event)
 			"previous", "pv" -> previous(event)
 			"forward", "fw"  -> forward(args.dropFirst(), event)
