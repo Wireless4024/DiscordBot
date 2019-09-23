@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration.ResamplingQual
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.wireless4024.discordbot.internal.music.Controller
+import com.wireless4024.discordbot.internal.rhino.JsExecutor
 import net.dv8tion.jda.api.Region
 import net.dv8tion.jda.api.Region.UNKNOWN
 import net.dv8tion.jda.api.audio.AudioSendHandler
@@ -27,6 +28,8 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 		configuration.opusEncodingQuality = 10
 		configuration.isFilterHotSwapEnabled = true
 	}
+
+	val JavascriptEngine = JsExecutor(this)
 
 	val musicController = Controller(this)
 
