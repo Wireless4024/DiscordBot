@@ -4,7 +4,7 @@ import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.SECONDS
 
 open class MessageEvent(private val e: MessageReceivedEvent?) {
 	val ev
@@ -36,10 +36,8 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 				Utils.log("-> [reply]\t'$text'", deep = 11 + deep)
 				ch.send(text) {
 					if (!permanent) {
-						TimeUnit.SECONDS.sleep(Property.BASE_SLEEP_DELAY)
-						Utils.log("-> [delete]\t'${it.contentDisplay}'")
 						try {
-							it.delete().complete()
+							it.delete().queueAfter(Property.BASE_SLEEP_DELAY, SECONDS)
 						} catch (e: Exception) {
 						}
 					}

@@ -11,9 +11,9 @@ class clean : ICommandBase {
 	private val running = mutableListOf<Long>()
 	override val permission = Permission.ADMINISTRATOR
 	override val options: List<Option> =
-			listOf(
-					Option("l", "limit", true, "number of message to remove").also { it.isRequired = false }
-			)
+		listOf(
+			Option("l", "limit", true, "number of message to remove").also { it.isRequired = false }
+		)
 
 	override fun invoke(args: CommandLine, event: MessageEvent): String {
 		if (event.ev == null || event.ch.idLong in running)
@@ -26,12 +26,17 @@ class clean : ICommandBase {
 				running.remove(event.ch.idLong)
 			}
 		else event.ch.iterableHistory.limit((args.getOptionValue("l").toIntOrNull() ?: 1) + 1)
-				.complete()
-				.drop(1)
-				.forEach { m -> m.delete().complete().also { ++cnt } }.let {
-					event.ch.sendThenDelete("deleted $cnt messages")
-					running.remove(event.ch.idLong)
+			.complete()
+			.drop(1)
+			.forEach { m ->
+				try {
+					m.delete().complete().also { ++cnt }
+				} catch (e: Exception) {
 				}
+			}.let {
+				event.ch.sendThenDelete("deleted $cnt messages")
+				running.remove(event.ch.idLong)
+			}
 		return ""
 	}
 }

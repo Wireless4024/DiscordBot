@@ -1,7 +1,6 @@
 package com.wireless4024.discordbot.internal
 
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.ChannelType.TEXT
@@ -31,10 +30,9 @@ class Handler : ListenerAdapter() {
 				if (re != null) {
 					GlobalScope.launch1 {
 						MessageEvent(event).reply(re)
-						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().complete()
+								event.message.delete().completeAfter(Property.BASE_SLEEP_DELAY, SECONDS)
 						} catch (e: Exception) {
 						}
 					}
@@ -52,10 +50,9 @@ class Handler : ListenerAdapter() {
 						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
 					GlobalScope.launch1 {
-						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().complete()
+								event.message.delete().completeAfter(Property.BASE_SLEEP_DELAY, SECONDS)
 						} catch (e: Exception) {
 						}
 					}
@@ -67,10 +64,9 @@ class Handler : ListenerAdapter() {
 						ev
 					)
 					GlobalScope.launch1 {
-						delay(Property.BASE_SLEEP_DELAY_MILLI)
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().complete()
+								event.message.delete().completeAfter(Property.BASE_SLEEP_DELAY, SECONDS)
 						} catch (e: Exception) {
 						}
 					}
