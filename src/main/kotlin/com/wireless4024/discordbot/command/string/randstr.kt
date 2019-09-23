@@ -25,7 +25,7 @@ class randstr : ICommandBase {
 			return String(charlist.toCharArray().toMutableList().also { it.shuffle(rnd) }.toCharArray())
 		val chars = CharArray(limit)
 		for (i in chars.indices)
-			chars[i] = charlist[rnd.nextInt(limit)]
+			chars[i] = charlist[rnd.nextInt(charlen)]
 		return String(chars)
 	}
 
