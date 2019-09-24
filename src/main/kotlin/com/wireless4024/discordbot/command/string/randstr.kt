@@ -14,11 +14,12 @@ class randstr : ICommandBase {
 	}
 
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
-		val charlist = event.msg
-		if (charlist.isEmpty())
+		if (event.msg.isEmpty())
 			throw CommandError("use case randstr <charlist> [limit]")
+		val lim = endWithNum.find(event.msg)
+		val limit = lim?.value?.trim()?.parseInt() ?: event.msg.length
+		val charlist = if (lim != null) event.msg.removeRange(lim.range).trim() else event.msg
 		val charlen = charlist.length
-		val limit = endWithNum.find(charlist)?.value?.trim()?.parseInt() ?: charlen
 		val rnd = java.util.Random()
 		if (limit == charlen)
 			return String(charlist.toCharArray().toMutableList().also { it.shuffle(rnd) }.toCharArray())
