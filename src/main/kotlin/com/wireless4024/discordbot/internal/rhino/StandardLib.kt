@@ -1,13 +1,18 @@
 package com.wireless4024.discordbot.internal.rhino
 
-import org.mozilla.javascript.BaseFunction
-import org.mozilla.javascript.Context
-import org.mozilla.javascript.NativeArray
-import org.mozilla.javascript.NativeObject
+import com.wireless4024.discordbot.internal.Utils
+import org.mozilla.javascript.*
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import kotlin.math.absoluteValue
 
 class StandardLib {
+	companion object {
+		val INSTANCE = StandardLib()
+	}
+
 	val trim = Regex("[\r\n\t]+")
 	val trims = Regex("\\s+")
 	val stdout = StringBuilder()
@@ -20,6 +25,35 @@ class StandardLib {
 		stdout.append(value).append('\n')
 	}
 
+	fun request(url: String, method: String, data: Any? = null): String {
+		val target = URL(Utils.getFinalURL(if (url.startsWith("http")) url else "http://$url"))
+		val con = target.openConnection() as HttpURLConnection
+		con.doInput = true
+		con.doOutput = true
+		con.instanceFollowRedirects = true
+		con.requestMethod = method.toUpperCase()
+		if (method.equals("POST", true)) {
+			con.setRequestProperty("Content-Type", "application/json; utf-8")
+			con.outputStream.write(
+				(if (data !is NativeObject)
+					if (data is String) data else "{}"
+				else toJSON(data, true)).toByteArray()
+			)
+		}
+		con.connect()
+		// limit to 1903 character because if content is very large we shouldn't read them all cause wasting bandwidth/memory
+		val sb = java.lang.StringBuilder(1903)
+		val contents = InputStreamReader(con.inputStream, "utf-8")
+		var char = contents.read()
+		while (char != -1 && sb.length < 1900) {
+			sb.append(char.toChar())
+			char = contents.read()
+		}
+		if (sb.length == 1900)
+			sb.append("...")
+		return sb.toString()
+	}
+
 	private fun trim(string: String) = trims.replace(trim.replace(string, ""), " ")
 
 	private fun toString(value: Any?): String {
@@ -29,18 +63,22 @@ class StandardLib {
 			is Array<*>                  -> deepToString(value)
 			is NativeArray               -> deepToString(value.toArray())
 			is BaseFunction              -> trim(Context.enter().decompileFunction(value, 0))
-			is NativeObject              -> toJSON(value)
+			is NativeObject              -> toJSON(value, false)
 			is java.lang.Number          -> {
 				val double = value.doubleValue()
 				val long = double.toLong()
 				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.longValue().toString()
 				else value.toString()
 			}
+			is NativeJavaObject          -> NativeJavaObject::class.java.getDeclaredField("javaObject").also {
+				it.isAccessible = true
+			}
+				.get(value).toString()
 			else                         -> value.toString()
 		}
 	}
 
-	private fun toQuotedString(value: Any?): String {
+	private fun toQuotedString(value: Any?, replaceFunctionWithNull: Boolean = false): String {
 		return when (value) {
 			null                -> "null"
 			is Boolean          -> value.toString()
@@ -50,7 +88,10 @@ class StandardLib {
 				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.longValue().toString()
 				else value.toString()
 			}
-			is BaseFunction     -> trim(Context.enter().decompileFunction(value, 0))
+			is BaseFunction     -> {
+				if (replaceFunctionWithNull) "null"
+				else trim(Context.enter().decompileFunction(value, 0))
+			}
 			else                -> quote(toString(value))
 		}
 	}
@@ -77,13 +118,15 @@ class StandardLib {
 		return product.append("\"").toString()
 	}
 
-	private fun toJSON(obj: NativeObject): String {
+	private fun toJSON(obj: NativeObject, funcToNull: Boolean): String {
 		val out = java.lang.StringBuilder(obj.size * 20).append('{')
-		obj.forEach { key, value -> out.append(toQuotedString(key)).append(':').append(toQuotedString(value)) }
+		obj.forEach { key, value ->
+			out.append(toQuotedString(key)).append(':').append(toQuotedString(value, funcToNull))
+		}
 		return out.append('}').toString()
 	}
 
-	fun deepToString(a: Array<*>?): String {
+	private fun deepToString(a: Array<*>?): String {
 		if (a == null) return "null"
 		var bufLen = 20 * a.size
 		if (a.isNotEmpty() && bufLen <= 0) bufLen = Integer.MAX_VALUE
@@ -138,7 +181,7 @@ class StandardLib {
 		dejaVu.remove(a)
 	}
 
-	fun collectSTDOUT(): String {
+	internal fun collectSTDOUT(): String {
 		val str = stdout.toString()
 		stdout.clear()
 		return str.trim().let { if (it.isEmpty()) "nothing return from your function" else it }
