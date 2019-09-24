@@ -3,6 +3,7 @@ package com.wireless4024.discordbot.internal.rhino
 import com.wireless4024.discordbot.internal.ConfigurationCache
 import com.wireless4024.discordbot.internal.Property
 import delight.rhinosandox.RhinoSandboxes
+import org.mozilla.javascript.Undefined
 
 class JsExecutor(val parent: ConfigurationCache) {
 	private val engine = RhinoSandboxes.create()
@@ -22,7 +23,12 @@ function println(val){std.println(val)}
 
 	fun eval(js: String): String {
 		try {
-			engine.eval(parent.guild.id, js)
+			val obj = engine.eval(parent.guild.id, js)
+			if (STD.stdout.isEmpty())
+				if (obj is Undefined)
+					STD.print("undefined")
+				else
+					STD.print(obj)
 		} catch (e: Throwable) {
 			STD.print("\n" + (e.cause?.toString() ?: e.toString()))
 		}
