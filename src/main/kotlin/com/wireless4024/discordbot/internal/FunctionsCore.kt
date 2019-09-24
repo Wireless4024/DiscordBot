@@ -41,7 +41,7 @@ fun MessageChannel.sendThenDelete(
 		if (timeout > 0)
 		/*@formatter:off*/
 			try {
-				timeUnit.sleep(timeout).run { it.delete().queue() }
+				timeUnit.sleep(timeout).run { it.delete().queue({},{}) }
 			} catch (e: Throwable) {
 			}
 		/*@formatter:on*/
