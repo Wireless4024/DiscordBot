@@ -5,11 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import com.wireless4024.discordbot.internal.CommandError
-import com.wireless4024.discordbot.internal.Property
 import com.wireless4024.discordbot.internal.music.Repeat.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.concurrent.BlockingDeque
@@ -117,14 +113,12 @@ class Scheduler(
 					queue.removeFirst()
 			} else {
 				player.stopTrack()
-				GlobalScope.launch {
-					delay(Property.BASE_SLEEP_DELAY_MILLI)
-					if (player.playingTrack == null && (queue.isEmpty() || queue.first == null))
-						parent.leave()
-				}
+				parent.attemptToLeave()
 				// messageDispatcher.sendMessage("Queue finished.")
 			}
 		} else player.startTrack(lastTrack.makeClone(), noInterrupt)
+		if (player.isPaused)
+			parent.attemptToLeave()
 		return player.playingTrack?.info?.title
 	}
 

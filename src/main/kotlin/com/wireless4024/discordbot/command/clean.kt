@@ -8,20 +8,19 @@ import org.apache.commons.cli.Option
 @SkipArguments
 class clean : ICommandBase {
 
-	private val running = mutableListOf<Long>()
 	override val permission = Permission.ADMINISTRATOR
 	override val options: List<Option> = listOf()
 
 	override fun invoke(args: CommandLine, event: MessageEvent): String {
-		if (event.ev == null || event.ch.idLong in running)
+		if (event.ev == null || event.configuration["clean"])
 			return ""
-		running.add(event.ch.idLong)
+		event.configuration["clean"] = true
 		val limit = event.msg.parseInt() ?: 0
 		var cnt = 0
 		if (limit == 0)
 			event.ch.iterableHistory.forEach { m -> m.delete().complete().also { ++cnt } }.let {
 				event.ch.sendThenDelete("deleted $cnt messages")
-				running.remove(event.ch.idLong)
+				event.configuration["clean"] = false
 			}
 		else event.ch.iterableHistory.limit(limit + 1)
 			.complete()
@@ -33,7 +32,7 @@ class clean : ICommandBase {
 				}
 			}.let {
 				event.ch.sendThenDelete("deleted $cnt messages")
-				running.remove(event.ch.idLong)
+				event.configuration["clean"] = false
 			}
 		return ""
 	}

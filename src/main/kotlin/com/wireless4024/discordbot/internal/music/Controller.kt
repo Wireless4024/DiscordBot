@@ -7,10 +7,10 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import com.wireless4024.discordbot.internal.CommandError
-import com.wireless4024.discordbot.internal.ConfigurationCache
-import com.wireless4024.discordbot.internal.MessageEvent
-import com.wireless4024.discordbot.internal.Utils
+import com.wireless4024.discordbot.internal.*
+import com.wireless4024.discordbot.internal.Property.Companion.ApplicationScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.VoiceChannel
@@ -123,6 +123,7 @@ class Controller(val parent: ConfigurationCache) {
 			connect(parent.audioManager, event.member.voiceState?.channel)
 			player.isPaused = false
 		}
+		attemptToLeave()
 	}
 
 	fun repeat(mode: String = "") = scheduler.repeat(mode)
@@ -143,6 +144,16 @@ class Controller(val parent: ConfigurationCache) {
 	fun previous(channel: VoiceChannel?): String? {
 		connect(parent.audioManager, channel)
 		return scheduler.previous()
+	}
+
+	fun attemptToLeave() = ApplicationScope.launch {
+		if (parent["leaving"])
+			return@launch
+		parent["leaving"] = true
+		delay(Property.BASE_SLEEP_DELAY_MILLI)
+		if (player.playingTrack == null && (scheduler.size() == 0))
+			parent.audioManager.closeAudioConnection()
+		parent["leaving"] = false
 	}
 
 	private fun <E> List<E>.limit(count: Int) = this.subList(0, min(count - 1, this.size - 1))
