@@ -32,9 +32,6 @@ class Utils {
 		val globalEvent = Handler()
 
 		@JvmStatic
-		val HAS_HTTP = Pattern.compile("^http")
-
-		@JvmStatic
 		fun <T> execute(timeout: Long, unit: TimeUnit, callback: Callable<T?>): T? {
 			val ex = Executors.newSingleThreadExecutor()
 			return try {
@@ -89,7 +86,7 @@ class Utils {
 		fun urlExisted(url: String): Boolean {
 			if (!URL_Regex.matcher(url).find())
 				return false
-			val furl = getFinalURL(if (HAS_HTTP.matcher(url).find()) url else "http://$url")
+			val furl = getFinalURL(if (url.startsWith("http")) url else "http://$url")
 			println("checking url... '${furl}'")
 			return ((URL(furl).openConnection() as HttpURLConnection).responseCode == 200)
 		}
