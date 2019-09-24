@@ -10,10 +10,7 @@ class clean : ICommandBase {
 
 	private val running = mutableListOf<Long>()
 	override val permission = Permission.ADMINISTRATOR
-	override val options: List<Option> =
-		listOf(
-			Option("l", "limit", true, "number of message to remove").also { it.isRequired = false }
-		)
+	override val options: List<Option> = listOf()
 
 	override fun invoke(args: CommandLine, event: MessageEvent): String {
 		if (event.ev == null || event.ch.idLong in running)
