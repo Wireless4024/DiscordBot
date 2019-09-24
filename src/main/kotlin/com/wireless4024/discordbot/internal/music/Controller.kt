@@ -78,10 +78,7 @@ class Controller(val parent: ConfigurationCache) {
 			it.setTitle("Song queues | page $page")
 			it.setDescription(
 				"${queue.size} song in queue | duration ${Utils.toReadableFormatTime(scheduler.queueDuation)} | " +
-						"remaining ${Utils.toReadableFormatTime(
-							(player.playingTrack?.duration ?: 0) +
-									scheduler.queueDuation
-						)}"
+						"remaining ${Utils.toReadableFormatTime(scheduler.queueRemaining)}"
 			)
 			it.setColor(Color.GREEN)
 			var position = (page - 1) * 10

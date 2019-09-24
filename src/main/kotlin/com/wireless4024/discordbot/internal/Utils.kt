@@ -112,7 +112,7 @@ class Utils {
 		fun toReadableFormatTime(millis: Long): String {
 			if (millis == 0L)
 				return "0 sec"
-			if (millis == Long.MAX_VALUE)
+			if (millis == Long.MAX_VALUE || millis < 0L)
 				return "forever"
 
 			val milli = millis % 1000

@@ -74,15 +74,19 @@ class Scheduler(
 		get() = kotlin.run {
 			if (queue.isEmpty())
 				return@run 0L
-			if (queue.size != 0 && repeat != NO)
-				return@run Long.MAX_VALUE
 			var duration = 0L
 			for (a in queue)
 				duration += a.duration
 			duration
 		}
 
+	val queueRemaining
+		get() = if ((queue.size != 0 || player.playingTrack != null) && repeat != NO) Long.MAX_VALUE
+		else queueDuation + (player.playingTrack?.duration ?: 0)
+
 	fun repeat(kw: String = ""): String {
+		if (kw.startsWith("ge"))
+			return repeat.name
 		repeat = when {
 			kw.startsWith("on", false) || kw.startsWith("si", false) -> SINGLE
 			kw.startsWith("al", false) || kw.startsWith("fu", false) -> ALL
@@ -106,11 +110,11 @@ class Scheduler(
 		player.isPaused = (am.connectedChannel?.members?.size ?: 2) < 2 && !am.isAttemptingToConnect
 
 		if (repeat != SINGLE || lastTrack == null) {
+			if (repeat == ALL && lastTrack != null)
+				queue.addLast(lastTrack.makeClone())
 			if (queue.isNotEmpty() && queue.first != null) {
 				if (player.startTrack(queue.first, noInterrupt))
 					queue.removeFirst()
-				if (repeat == ALL && lastTrack != null)
-					queue.addLast(lastTrack.makeClone())
 			} else {
 				player.stopTrack()
 				GlobalScope.launch {
