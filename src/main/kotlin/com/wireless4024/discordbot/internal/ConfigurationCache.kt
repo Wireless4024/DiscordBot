@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.Region
 import net.dv8tion.jda.api.Region.UNKNOWN
 import net.dv8tion.jda.api.audio.AudioSendHandler
 import net.dv8tion.jda.api.entities.Guild
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ConfigurationCache private constructor(var guild: Guild, var lastEvent: MessageEvent? = null) {
 	companion object {
@@ -20,6 +21,17 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 			return Cache[guild.idLong]!!.update(guild, lastEvent)
 		}
 	}
+
+	private val RunningTask = mutableMapOf<Any, AtomicBoolean>()
+
+	operator fun get(key: Any) = (if (RunningTask.containsKey(key)) RunningTask[key]!!.get()
+	else {
+		RunningTask[key] = AtomicBoolean(false)
+		RunningTask[key]!!.get()
+	})
+
+	operator fun set(key: Any, value: Boolean) = (if (RunningTask.containsKey(key)) RunningTask[key]!!.set(value)
+	else RunningTask[key] = AtomicBoolean(value))
 
 	val audioPlayerManager = DefaultAudioPlayerManager().also {
 		AudioSourceManagers.registerRemoteSources(it)
