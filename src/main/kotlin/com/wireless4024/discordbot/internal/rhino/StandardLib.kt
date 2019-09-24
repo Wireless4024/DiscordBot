@@ -31,7 +31,9 @@ class StandardLib {
 			is BaseFunction              -> trim(Context.enter().decompileFunction(value, 0))
 			is NativeObject              -> toJSON(value)
 			is java.lang.Number          -> {
-				if (value.doubleValue().absoluteValue <= 9007199254740991.0) value.longValue().toString()
+				val double = value.doubleValue()
+				val long = double.toLong()
+				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.longValue().toString()
 				else value.toString()
 			}
 			else                         -> value.toString()
@@ -41,8 +43,11 @@ class StandardLib {
 	private fun toQuotedString(value: Any?): String {
 		return when (value) {
 			null                -> "null"
+			is Boolean          -> value.toString()
 			is java.lang.Number -> {
-				if (value.doubleValue().absoluteValue <= 9007199254740991.0) value.longValue().toString()
+				val double = value.doubleValue()
+				val long = double.toLong()
+				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.longValue().toString()
 				else value.toString()
 			}
 			is BaseFunction     -> trim(Context.enter().decompileFunction(value, 0))
