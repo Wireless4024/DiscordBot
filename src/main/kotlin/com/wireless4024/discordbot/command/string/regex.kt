@@ -21,22 +21,26 @@ class regex : ICommandBase {
 		@JvmStatic
 		fun regex(regex: String, operation: String, target: String, replacement: String? = null): Any {
 			return Utils.execute(Property.BASE_SLEEP_DELAY shl 1, SECONDS, Callable {
-				when (operation.toLowerCase()) {
-					"find"          -> regex.toRegex().find(target)?.value ?: ""
-					"in", "findall" -> regex.toRegex().findAll(target).map { it.value }.joinToString(", ", "[", "]")
-					"~", "match"    -> regex.toRegex().containsMatchIn(target)
-					"~=", "matchs"  -> regex.toRegex().matches(target)
-					"=", "replace"  -> if (replacement == null) with(split(target)) {
-						regex.toRegex().replace(this[0], this[1])
-					} else regex.toRegex().replace(target, replacement)
-					"replacefirst"  -> if (replacement == null) with(split(target)) {
-						regex.toRegex().replaceFirst(this[0], this[1])
-					} else regex.toRegex().replaceFirst(target, replacement)
-					"split"         -> if (replacement == null) with(split(target)) {
-						if (this[1].parseInt() == null) regex.toRegex().split(target)
-						else regex.toRegex().split(this[0], this[1].parseInt() ?: 0)
-					} else regex.toRegex().split(target, replacement.parseInt() ?: 0)
-					else            -> "invalid operation"
+				try {
+					when (operation.toLowerCase()) {
+						"find"          -> regex.toRegex().find(target)?.value ?: ""
+						"in", "findall" -> regex.toRegex().findAll(target).map { it.value }.joinToString(", ", "[", "]")
+						"~", "match"    -> regex.toRegex().containsMatchIn(target)
+						"~=", "matchs"  -> regex.toRegex().matches(target)
+						"=", "replace"  -> if (replacement == null) with(split(target)) {
+							regex.toRegex().replace(this[0], this[1])
+						} else regex.toRegex().replace(target, replacement)
+						"replacefirst"  -> if (replacement == null) with(split(target)) {
+							regex.toRegex().replaceFirst(this[0], this[1])
+						} else regex.toRegex().replaceFirst(target, replacement)
+						"split"         -> if (replacement == null) with(split(target)) {
+							if (this[1].parseInt() == null) regex.toRegex().split(target)
+							else regex.toRegex().split(this[0], this[1].parseInt() ?: 0)
+						} else regex.toRegex().split(target, replacement.parseInt() ?: 0)
+						else            -> "invalid operation"
+					}
+				} catch (e: Throwable) {
+					e.cause?.message ?: e.message ?: e
 				}
 			}) ?: "execution timeout"
 
