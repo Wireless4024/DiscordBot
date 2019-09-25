@@ -55,8 +55,9 @@ class regex : ICommandBase {
 			return arrayOf(base.removeRange(end.range), trim(end.value))
 		}
 
-		private fun trim(word: String): String {
-			if (word.startsWith('"') && word.endsWith('"'))
+		@JvmStatic
+		fun trim(word: String): String {
+			if (word.startsWith('\'') && word.endsWith('\''))
 				return word.drop(1).dropLast(1)
 			return word.trim()
 		}
