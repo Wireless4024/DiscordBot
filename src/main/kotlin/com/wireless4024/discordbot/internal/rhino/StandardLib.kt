@@ -67,6 +67,7 @@ class StandardLib {
 				sb.append(char.toChar())
 				char = contents.read()
 			}
+			contents.close()
 			if (sb.length == 1900)
 				sb.append("...")
 			return sb.toString()
