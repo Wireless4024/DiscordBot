@@ -20,7 +20,7 @@ class regex : ICommandBase {
 	companion object {
 		@JvmStatic
 		fun regex(regex: String, operation: String, target: String, replacement: String? = null): Any {
-			return Utils.execute(Property.BASE_SLEEP_DELAY shl 1, SECONDS, Callable {
+			return Utils.execute(5, SECONDS, Callable {
 				try {
 					when (operation.toLowerCase()) {
 						"find"          -> regex.toRegex().find(target)?.value ?: ""
