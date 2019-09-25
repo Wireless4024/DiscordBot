@@ -1,22 +1,22 @@
 package com.wireless4024.discordbot.internal.rhino
 
 import com.wireless4024.discordbot.internal.Utils
+import org.apache.http.HttpResponse
+import org.apache.http.client.methods.*
+import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.HttpClientBuilder
 import org.mozilla.javascript.*
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
+import java.io.InputStream
 import java.net.URL
+import java.net.URLEncoder
 import java.util.*
 import kotlin.math.absoluteValue
 
 class StandardLib {
-	companion object {
-		val INSTANCE = StandardLib()
-	}
 
 	val trim = Regex("[\r\n\t]+")
 	val trims = Regex("\\s+")
 	val stdout = StringBuilder()
-
 	fun print(value: Any?) {
 		stdout.append(toString(value))
 	}
@@ -27,43 +27,67 @@ class StandardLib {
 
 	fun request(url: String, method: String, data: Any? = null): String {
 		val target = URL(Utils.getFinalURL(if (url.startsWith("http")) url else "http://$url"))
-		val con = target.openConnection() as HttpURLConnection
-		con.doInput = true
-		con.doOutput = true
-		con.instanceFollowRedirects = true
-		con.requestMethod = method.toUpperCase()
-		if (method.equals("POST", true)) {
-			con.setRequestProperty("Content-Type", "application/json; utf-8")
-			con.outputStream.write(
-				(if (data !is NativeObject)
-					if (data is String) data else "{}"
-				else toJSON(data, true)).toByteArray()
-			)
+		val contents: InputStream
+		try {
+			when {
+				method.toUpperCase() in arrayOf("POST", "PUT")                               -> {
+					val request = if (method.equals("POST", true)) HttpPost(target.toURI()) else HttpPut(target.toURI())
+					request.addHeader("Content-Type", "application/x-www-form-urlencoded")
+					request.addHeader("User-Agent", "curl") // fake curl
+					request.addHeader("Cache-Control", "max-age=0") // do not cache
+					request.entity = StringEntity(
+						if (data !is NativeObject)
+							if (data is String) data
+							else ""
+						else toUrlEncoded(data),
+						Charsets.UTF_8
+					)
+					val response: HttpResponse = HttpClient.execute(request)
+					contents = response.entity.content
+				}
+				method.toUpperCase() in arrayOf("GET", "HEAD", "OPTIONS", "DELETE", "TRACE") -> {
+					val request: HttpUriRequest = when (method.toUpperCase()) {
+						"HEAD"    -> HttpHead(target.toURI())
+						"OPTIONS" -> HttpOptions(target.toURI())
+						"DELETE"  -> HttpDelete(target.toURI())
+						"TRACE"   -> HttpTrace(target.toURI())
+						else      -> HttpGet(target.toURI())
+					}
+					request.addHeader("User-Agent", "curl") // fake curl
+					request.addHeader("Cache-Control", "max-age=0") // do not cache
+					val response: HttpResponse = HttpClient.execute(request)
+					contents = response.entity.content
+				}
+				else                                                                         -> throw RuntimeException("method not supported")
+			}
+			// limit to 1903 character because if content is very large we shouldn't read them all cause wasting bandwidth/memory
+			val sb = java.lang.StringBuilder(1903)
+			var char = contents.read()
+			while (char != -1 && sb.length < 1900) {
+				sb.append(char.toChar())
+				char = contents.read()
+			}
+			if (sb.length == 1900)
+				sb.append("...")
+			return sb.toString()
+		} catch (e: Throwable) {
+			return e.toString()
 		}
-		con.connect()
-		// limit to 1903 character because if content is very large we shouldn't read them all cause wasting bandwidth/memory
-		val sb = java.lang.StringBuilder(1903)
-		val contents = InputStreamReader(con.inputStream, "utf-8")
-		var char = contents.read()
-		while (char != -1 && sb.length < 1900) {
-			sb.append(char.toChar())
-			char = contents.read()
-		}
-		if (sb.length == 1900)
-			sb.append("...")
-		return sb.toString()
 	}
 
 	private fun trim(string: String) = trims.replace(trim.replace(string, ""), " ")
 
-	private fun toString(value: Any?): String {
+	private fun toString(value: Any?, replaceFunctionWithNull: Boolean = false): String {
 		return when (value) {
 			null                         -> "null"
 			is java.util.Map.Entry<*, *> -> toQuotedString(value.key) + ":" + toQuotedString(value.value)
 			is Array<*>                  -> deepToString(value)
 			is NativeArray               -> deepToString(value.toArray())
-			is BaseFunction              -> trim(Context.enter().decompileFunction(value, 0))
-			is NativeObject              -> toJSON(value, false)
+			is BaseFunction              -> {
+				if (replaceFunctionWithNull) "null"
+				else trim(Context.enter().decompileFunction(value, 0))
+			}
+			is NativeObject              -> toJSON(value, replaceFunctionWithNull)
 			is java.lang.Number          -> {
 				val double = value.doubleValue()
 				val long = double.toLong()
@@ -116,6 +140,17 @@ class StandardLib {
 			}
 		}
 		return product.append("\"").toString()
+	}
+
+	private fun toUrlEncoded(obj: NativeObject): String {
+		val out = java.lang.StringBuilder(obj.size * 20)
+		obj.forEach { key, value ->
+			out.append(URLEncoder.encode(toString(key), Charsets.UTF_8))
+				.append('=')
+				.append(URLEncoder.encode(toString(value, true), Charsets.UTF_8))
+				.append('&')
+		}
+		return out.toString().let { if (it.isNotEmpty()) it.dropLast(1) else it }
 	}
 
 	private fun toJSON(obj: NativeObject, funcToNull: Boolean): String {
@@ -185,5 +220,10 @@ class StandardLib {
 		val str = stdout.toString()
 		stdout.clear()
 		return str.trim().let { if (it.isEmpty()) "nothing return from your function" else it }
+	}
+
+	companion object {
+		val INSTANCE = StandardLib()
+		val HttpClient = HttpClientBuilder.create().build()
 	}
 }
