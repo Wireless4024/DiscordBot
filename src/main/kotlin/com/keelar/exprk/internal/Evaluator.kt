@@ -26,6 +26,11 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 		return this
 	}
 
+	fun addFunction(names: Array<String>, function: Function): Evaluator {
+		names.forEach { addFunction(it, function) }
+		return this
+	}
+
 	fun addFunction(name: String, function: Function): Evaluator {
 		if (functions.containsKey(name.toLowerCase()))
 			throw UnsupportedOperationException("function $name already existed")
@@ -54,7 +59,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 			BAR_BAR -> left or right
 			AMP_AMP -> left and right
 			else    -> throw ExpressionException(
-					"Invalid logical operator '${expr.operator.lexeme}'"
+				"Invalid logical operator '${expr.operator.lexeme}'"
 			)
 		}
 	}
@@ -90,7 +95,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 			ROL           -> left rol right
 
 			else          -> throw ExpressionException(
-					"Invalid binary operator '${expr.operator.lexeme}'"
+				"Invalid binary operator '${expr.operator.lexeme}'"
 			)
 		}
 	}
