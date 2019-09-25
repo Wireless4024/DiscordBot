@@ -12,7 +12,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	internal var context: MathContext = MathContext(128, FLOOR)
 
 	private val variables: LinkedHashMap<String, BigDecimal> = linkedMapOf()
-	private val functions: MutableMap<String, Function> = mutableMapOf()
+	private val functions: MutableMap<String, (List<BigDecimal>) -> BigDecimal> = mutableMapOf()
 
 	internal fun define0(name: String, value: BigDecimal, override: Boolean = false) {
 		if (name in arrayOf("pi", "e") && !override)
@@ -26,12 +26,12 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 		return this
 	}
 
-	fun addFunction(names: Array<String>, function: Function): Evaluator {
+	fun addFunction(names: Array<String>, function: (arguments: List<BigDecimal>) -> BigDecimal): Evaluator {
 		names.forEach { addFunction(it, function) }
 		return this
 	}
 
-	fun addFunction(name: String, function: Function): Evaluator {
+	fun addFunction(name: String, function: (arguments: List<BigDecimal>) -> BigDecimal): Evaluator {
 		if (functions.containsKey(name.toLowerCase()))
 			throw UnsupportedOperationException("function $name already existed")
 		functions += name.toLowerCase() to function
@@ -164,7 +164,7 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 		val name = expr.name
 		val function = functions[name.toLowerCase()] ?: throw ExpressionException("Undefined function '$name'")
 
-		return function.call(expr.arguments.map { eval(it) })
+		return function(expr.arguments.map { eval(it) })
 	}
 
 	override fun visitLiteralExpr(expr: LiteralExpr): BigDecimal {
