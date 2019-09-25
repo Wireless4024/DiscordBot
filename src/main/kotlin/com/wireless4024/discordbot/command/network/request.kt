@@ -34,7 +34,7 @@ class post : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
 		if (args.args.isEmpty())
 			return "use case post <url> [parameter=value]"
-		return StandardLib.INSTANCE.request(args[0] ?: "", "POST", args[1]?.trim('\'') ?: "")
+		return StandardLib.INSTANCE.request(args[0] ?: "", "POST", args[1] ?: "")
 	}
 
 	override val options: List<Option> = listOf()
