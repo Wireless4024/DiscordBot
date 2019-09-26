@@ -13,7 +13,7 @@ import java.net.URLEncoder
 class encodeurl : ICommandBase {
 
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
-		return URLDecoder.decode(event.msg, Charsets.UTF_8)
+		return URLEncoder.encode(event.msg, Charsets.UTF_8)
 	}
 
 	override val options: List<Option> = listOf()
@@ -25,7 +25,7 @@ class encodeurl : ICommandBase {
 class decodeurl : ICommandBase {
 
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
-		return URLEncoder.encode(event.msg, Charsets.UTF_8)
+		return URLDecoder.decode(event.msg, Charsets.UTF_8)
 	}
 
 	override val options: List<Option> = listOf()
