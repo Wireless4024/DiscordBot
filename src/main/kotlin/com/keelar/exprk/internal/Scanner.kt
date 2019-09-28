@@ -109,7 +109,8 @@ internal class Scanner(
 	private fun postFix(now: Char, next: Char): BigDecimal? {
 		return when {
 			now == '!' && next != '=' -> BigDecimalMath.factorial(
-					BigDecimalMath.toBigDecimal(source.substring(start, current - 1)), mathContext).also { advance() }
+				BigDecimalMath.toBigDecimal(source.substring(start, current)), mathContext
+			).also { advance() }
 			else                      -> null
 		}
 	}
