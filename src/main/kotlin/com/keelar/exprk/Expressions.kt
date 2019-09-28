@@ -262,7 +262,7 @@ class Expressions {
 		return try {
 			eval(expression).round(evaluator.context).stripTrailingZeros().toEngineeringString()
 		} catch (e: Throwable) {
-			e.cause?.message ?: e.message ?: ""
+			e.cause?.message ?: e.message ?: e.toString()
 		}
 	}
 
