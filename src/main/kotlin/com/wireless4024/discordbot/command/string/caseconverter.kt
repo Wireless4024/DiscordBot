@@ -30,6 +30,17 @@ class tolowercase : ICommandBase {
 }
 
 @SkipArguments
+class capitalize : ICommandBase {
+
+	override fun invoke(args: CommandLine, event: MessageEvent): Any {
+		return event.msg.capitalize()
+	}
+
+	override val options: List<Option> = listOf()
+	override val permission: Int = Permission.ANY
+}
+
+@SkipArguments
 class torandomcase : ICommandBase {
 
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
