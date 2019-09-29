@@ -42,7 +42,7 @@ interface Invokable {
 	fun parse(msg: Array<String>): CommandLine
 	fun genOptions(): Options
 	fun needArguments(): Boolean
-	operator fun invoke(args: CommandLine, event: MessageEvent): Any
+	operator fun invoke(args: CommandLine, event: MessageEvent): Any?
 }
 
 internal class InvokableInstance(val cm: ICommandBase) : Invokable {
@@ -55,7 +55,7 @@ internal class InvokableInstance(val cm: ICommandBase) : Invokable {
 	override fun parse(msg: Array<String>): CommandLine = cm.parse(msg)
 	override fun genOptions(): Options = cm.genOptions()
 	override fun needArguments(): Boolean = !cm.javaClass.isAnnotationPresent(SkipArguments::class.java)
-	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
+	override fun invoke(args: CommandLine, event: MessageEvent): Any? = try {
 		cm(args, event)
 	} catch (e: Exception) {
 		if (Property.DEBUG)
@@ -74,13 +74,14 @@ internal class InvokableMethod(val method: Method, val parent: ICommandBase) : I
 	override fun name(): String = method.name
 	override fun parse(msg: Array<String>): CommandLine = parent.parse(msg)
 	override fun needArguments(): Boolean = !method.isAnnotationPresent(SkipArguments::class.java)
-	override fun invoke(args: CommandLine, event: MessageEvent): Any = try {
+	override fun invoke(args: CommandLine, event: MessageEvent): Any? = try {
 		when (method.parameterCount) {
 			0    -> method.invoke(parent)
-			1    -> when (method.parameterTypes[0]) {
-				MessageEvent::class.java -> method.invoke(parent, event)
-				CommandLine::class.java  -> method.invoke(parent, args)
-				else                     -> "command ${parent.name()}.${method.name} has invalid parameter type"
+			1    -> {
+				@Suppress("CascadeIf")
+				if (method.parameterTypes[0] == MessageEvent::class.java) method.invoke(parent, event)
+				else if (method.parameterTypes[0] == CommandLine::class.java) method.invoke(parent, args)
+				else "command ${parent.name()}.${method.name} has invalid parameter type"
 			}
 			else -> method.invoke(parent, args, event)
 		}
