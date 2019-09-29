@@ -56,7 +56,9 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 		fun deserialize(data: DiscordServer) {
 			val guild = Property.JDA.getGuildById(data.guild) ?: return
+			println("loading configuration for ${guild.name}")
 			val it = ConfigurationCache(guild)
+			Cache[data.guild] = it
 			val setting = data.setting
 			if (setting.exprk == null) setting.exprk = ExprkSetting()
 			if (setting.music == null) setting.music = MusicSetting()
@@ -79,7 +81,6 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 			}
 			if (music.player().playingTrack != null)
 				music.player().playingTrack.position = setting.music!!.position
-			Cache[data.guild] = it
 		}
 	}
 
