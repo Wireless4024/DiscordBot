@@ -21,7 +21,7 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 		set(text) = this.reply(text, deep = 1)
 	var permreply: Any? = null
 		set(text) = this.reply(text, true)
-	open val msg = Utils.getParameter(this.e!!.message.contentDisplay.trim('`', ' '))
+	open var msg = Utils.getParameter(this.e!!.message.contentDisplay.trim('`', ' '))
 	val guild
 		get() = this.e!!.guild
 	val configuration
@@ -44,6 +44,11 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 				}
 			}
 		}
+	}
+
+	fun dropFirst(): MessageEvent {
+		this.msg = Utils.getParameter(this.msg)
+		return this
 	}
 
 	open fun chperm(permission: Int): Boolean {
@@ -73,7 +78,7 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 }
 
 class ConsoleEvent(private val message: String) : MessageEvent(null) {
-	override val msg: String = this.message
+	override var msg: String = this.message
 
 	override fun reply(text: Any?, permanent: Boolean, deep: Int) {
 		if (text != null && text.toString().isNotBlank()) print(text)
