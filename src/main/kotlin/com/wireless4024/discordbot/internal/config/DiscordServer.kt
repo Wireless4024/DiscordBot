@@ -1,10 +1,7 @@
 package com.wireless4024.discordbot.internal.config
 
 import com.keelar.exprk.Expressions
-import kotlinx.coroutines.runBlocking
 import org.bson.types.ObjectId
-import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.reactivestreams.KMongo
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 
@@ -42,18 +39,6 @@ data class DiscordServer(
 				)
 			)
 		}
-	}
-}
-
-fun main() {
-	val mongo = KMongo.createClient().coroutine.getDatabase("w4024-discordbot-v2")
-	val collection = mongo.getCollection<DiscordServer>("setting")
-	runBlocking {
-		//collection.insertOne(DiscordServer.createTest(1))
-		val find = collection.find("{}")
-		while (find.first()?.also {
-				println(it)
-			} != null) find.skip(1)
 	}
 }
 
