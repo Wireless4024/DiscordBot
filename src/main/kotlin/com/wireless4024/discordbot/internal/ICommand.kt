@@ -31,7 +31,7 @@ interface ICommandBase {
 					if (cm.needArguments()) cm.parse(split.findAll(args).map { trim(it.value) }.toList().toTypedArray()) else EmptyCommandLine,
 					event
 				)
-				if (!msg.isUnit())
+				if (msg?.isUnit() != true)
 					event.reply = msg
 				else
 					Utils.log("command '${cm.name()}' return nothing..")
