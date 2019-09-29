@@ -1,14 +1,24 @@
 package com.wireless4024.discordbot.internal
 
+import com.keelar.exprk.Expressions
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration.ResamplingQuality.LOW
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
+import com.wireless4024.discordbot.internal.config.DiscordServer
+import com.wireless4024.discordbot.internal.config.ExprkSetting
+import com.wireless4024.discordbot.internal.config.MusicSetting
+import com.wireless4024.discordbot.internal.config.Setting
 import com.wireless4024.discordbot.internal.music.Controller
 import com.wireless4024.discordbot.internal.rhino.JsExecutor
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.Region
 import net.dv8tion.jda.api.Region.UNKNOWN
 import net.dv8tion.jda.api.audio.AudioSendHandler
 import net.dv8tion.jda.api.entities.Guild
+import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.reactivestreams.KMongo
+import java.math.RoundingMode
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ConfigurationCache private constructor(var guild: Guild, var lastEvent: MessageEvent? = null) {
@@ -19,6 +29,57 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 			if (!Cache.containsKey(guild.idLong))
 				Cache[guild.idLong] = ConfigurationCache(guild, lastEvent)
 			return Cache[guild.idLong]!!.update(guild, lastEvent)
+		}
+
+		private val roundingMode = RoundingMode.values()
+
+		fun init() {
+			runBlocking {
+				val db = KMongo.createClient().coroutine
+				launch {
+					db.getDatabase("w4024-discordbot-v2")
+						.getCollection<DiscordServer>("setting")
+						.find().toList().forEach() { deserialize(it) }
+				}
+				kotlinx.coroutines.delay(30000)
+				db.close()
+			}
+		}
+
+		fun submit() {
+			val db = KMongo.createClient().coroutine.getDatabase("w4024-discordbot-v2")
+				.getCollection<DiscordServer>("setting")
+			runBlocking {
+				Cache.forEach() { (_, it) -> launch { db.save(it.serialize()) } }
+			}
+		}
+
+		fun deserialize(data: DiscordServer) {
+			val guild = Property.JDA.getGuildById(data.guild) ?: return
+			val it = ConfigurationCache(guild)
+			val setting = data.setting
+			if (setting.exprk == null) setting.exprk = ExprkSetting()
+			if (setting.music == null) setting.music = MusicSetting()
+			it.prefix = setting.prefix
+			it.Expressions = Expressions().also {
+				it.setPrecision(setting.exprk!!.precision)
+				it.setRoundingMode(roundingMode.first { it2 -> it2.name == setting.exprk!!.roundingMode })
+				it.setVariables(setting.exprk!!.variables)
+			}
+			val music = it.musicController
+			music.volume(setting.music!!.volume)
+			music.deserializeQueue(setting.music!!.queues)
+			val vc = if (setting.music!!.channel == 0L) null else guild.getVoiceChannelById(setting.music!!.channel)
+			music.player().isPaused = false
+			if (vc != null) {
+				music.connect(it.audioManager, vc, true)
+				music.player().isPaused = !setting.music!!.playing
+			} else {
+				music.player().isPaused = true
+			}
+			if (music.player().playingTrack != null)
+				music.player().playingTrack.position = setting.music!!.position
+			Cache[data.guild] = it
 		}
 	}
 
@@ -73,4 +134,26 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 	}
 
 	val Regions = Region.values()
+
+	fun serialize(): DiscordServer {
+		return DiscordServer(
+			DiscordServer.translateObjectID(guild.idLong),
+			guild.idLong,
+			Setting(
+				prefix,
+				ExprkSetting(
+					Expressions.precision,
+					Expressions.roundingMode.name,
+					Expressions.variables()
+				),
+				MusicSetting(
+					musicController.player().volume,
+					!musicController.player().isPaused,
+					musicController.player().playingTrack?.position ?: 0,
+					audioManager.connectedChannel?.idLong ?: 0,
+					musicController.serializeQueue()
+				)
+			)
+		)
+	}
 }

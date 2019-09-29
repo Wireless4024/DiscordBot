@@ -2,6 +2,7 @@ package com.wireless4024.discordbot.internal
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Member
 
 interface Property {
@@ -27,6 +28,8 @@ interface Property {
 		val PREFIX = "--"
 		val Commands: CommandPool by lazyOf(CommandPool())
 		val ApplicationScope= CoroutineScope(Dispatchers.Default)
+		val dbname="w4024-discordbot-v2"
+		lateinit var JDA:JDA
 		/* @formatter:on */
 
 		interface Permission {

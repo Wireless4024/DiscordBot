@@ -278,4 +278,13 @@ class Expressions {
 		return Scanner(expression, evaluator.context).scanTokens()
 	}
 
+	fun variables(): List<Pair<String, BigDecimal>> = evaluator.variables.let {
+		val result: MutableList<Pair<String, BigDecimal>> = mutableListOf()
+		it.forEach { (k, v) -> if (k !in arrayOf("pi", "e")) result.add(k to v) }
+		result
+	}
+
+	fun setVariables(data: List<Pair<String, BigDecimal>>) {
+		data.forEach { if (it.first !in arrayOf("pi", "e")) evaluator.variables[it.first] = it.second }
+	}
 }

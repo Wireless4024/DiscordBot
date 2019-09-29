@@ -5,6 +5,8 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
+import com.sedmelluq.discord.lavaplayer.tools.io.MessageInput
+import com.sedmelluq.discord.lavaplayer.tools.io.MessageOutput
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.wireless4024.discordbot.internal.*
@@ -16,6 +18,9 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.managers.AudioManager
 import java.awt.Color
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -206,12 +211,23 @@ class Controller(val parent: ConfigurationCache) {
 		})
 	}
 
+	internal fun serializeQueue() = scheduler.getQueue().map {
+		val out = ByteArrayOutputStream()
+		manager.encodeTrack(MessageOutput(out), it)
+		Base64.getEncoder().encodeToString(out.toByteArray())
+	}.toTypedArray()
+
+	internal fun deserializeQueue(data: Array<String>) =
+		scheduler.loadQueue(data.map {
+			manager.decodeTrack(MessageInput(ByteArrayInputStream(Base64.getDecoder().decode(it)))).decodedTrack
+		}.toTypedArray())
+
 	private inline fun <T> playing(operation: ((AudioTrack) -> T?)): T? =
 		with(player.playingTrack ?: throw CommandError("player is not playing")) {
 			operation(this)
 		}
 
-	private fun connect(audioManager: AudioManager, voiceChannel: VoiceChannel?, force: Boolean = false): String {
+	internal fun connect(audioManager: AudioManager, voiceChannel: VoiceChannel?, force: Boolean = false): String {
 		if (voiceChannel == null)
 			throw CommandError("You must be in voice channel to use command")
 		if (force || !audioManager.isConnected && !audioManager.isAttemptingToConnect)

@@ -66,6 +66,15 @@ class Scheduler(
 	val queues
 		get() = queue.toTypedArray()
 
+	internal fun getQueue() = queue.toMutableList().also {
+		if (player.playingTrack != null)
+			it.add(0, player.playingTrack)
+	}.toTypedArray()
+
+	internal fun loadQueue(data: Array<AudioTrack>) = data.forEach { queue.addLast(it) }.also {
+		startNextTrack(true)
+	}
+
 	val queueDuation
 		get() = kotlin.run {
 			if (queue.isEmpty())

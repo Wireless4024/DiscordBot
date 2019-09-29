@@ -11,7 +11,7 @@ import java.math.RoundingMode.FLOOR
 internal class Evaluator : ExprVisitor<BigDecimal> {
 	internal var context: MathContext = MathContext(128, FLOOR)
 
-	private val variables: LinkedHashMap<String, BigDecimal> = linkedMapOf()
+	internal val variables: LinkedHashMap<String, BigDecimal> = linkedMapOf()
 	private val functions: MutableMap<String, (List<BigDecimal>) -> BigDecimal> = mutableMapOf()
 
 	internal fun define0(name: String, value: BigDecimal, override: Boolean = false) {
