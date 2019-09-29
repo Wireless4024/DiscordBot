@@ -9,21 +9,21 @@ import org.apache.commons.cli.Option
 class music : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
 		return when (args[0]) {
-			"play", "p"      -> p(event)
-			"join", "j"      -> j(event)
-			"leave", "l"     -> leave(event)
-			"skip", "s"      -> s(event)
-			"vol", "v"       -> v(event)
-			"queue", "q"     -> queue(event)
-			"clear", "c"     -> clear(event)
-			"pause"          -> pause(event)
-			"repeat", "r"    -> repeat(event)
-			"remove", "d"    -> remove(event)
-			"previous", "pv" -> previous(event)
-			"forward", "fw"  -> forward(event)
-			"backward", "bw" -> backward(event)
-			"seek"           -> seek(event)
-			"now"            -> now(event)
+			"play", "p"      -> p(event.dropFirst())
+			"join", "j"      -> j(event.dropFirst())
+			"leave", "l"     -> leave(event.dropFirst())
+			"skip", "s"      -> s(event.dropFirst())
+			"vol", "v"       -> v(event.dropFirst())
+			"queue", "q"     -> queue(event.dropFirst())
+			"clear", "c"     -> clear(event.dropFirst())
+			"pause"          -> pause(event.dropFirst())
+			"repeat", "r"    -> repeat(event.dropFirst())
+			"remove", "d"    -> remove(event.dropFirst())
+			"previous", "pv" -> previous(event.dropFirst())
+			"forward", "fw"  -> forward(event.dropFirst())
+			"backward", "bw" -> backward(event.dropFirst())
+			"seek"           -> seek(event.dropFirst())
+			"now"            -> now(event.dropFirst())
 			else             -> ""
 		}
 	}
@@ -32,6 +32,10 @@ class music : ICommandBase {
 	@SkipArguments
 	fun p(event: MessageEvent): String =
 		event.ensureVoiceConnected { event.musicController.queue(event);"" }
+
+	@Command
+	@SkipArguments
+	fun ytsearch(event: MessageEvent) = event.musicController.search(event.msg, event)
 
 	@Command
 	@SkipArguments

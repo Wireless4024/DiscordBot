@@ -163,6 +163,44 @@ class Controller(val parent: ConfigurationCache) {
 
 	private fun <E> List<E>.limit(count: Int) = this.subList(0, min(count - 1, this.size - 1))
 
+	fun search(word: String, event: MessageEvent) {
+		manager.loadItem("ytsearch:$word", object : AudioLoadResultHandler {
+			override fun trackLoaded(track: AudioTrack) {
+				event.reply = EmbedBuilder().also {
+					it.setTitle(track.info.title)
+					it.setDescription(track.info.author)
+					it.setColor(Color.GREEN)
+					it.addField("url", track.info.uri, false)
+					it.addField("duration", Utils.toReadableFormatTime(track.info.length), false)
+				}.build()
+			}
+
+			override fun playlistLoaded(playlist: AudioPlaylist) {
+				val tracks = playlist.tracks
+				event.reply = EmbedBuilder().also {
+					it.setTitle("Found ${tracks.size} tracks")
+					it.setColor(Color.GREEN)
+					tracks.forEach { track ->
+						it.addField(
+							track.info.title + " " + track.info.uri,
+							"by: ${track.info.author} | duration: ${Utils.toReadableFormatTime(
+								track.info.length
+							)}", false
+						)
+					}
+				}.build()
+			}
+
+			override fun noMatches() {
+				event.reply("Nothing found for $word")
+			}
+
+			override fun loadFailed(throwable: FriendlyException) {
+				event.reply("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")")
+			}
+		})
+	}
+
 	/**
 	 * @param pickfirst Boolean if search result ticked as playlist should player add song as single track
 	 */
