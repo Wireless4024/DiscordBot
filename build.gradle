@@ -56,6 +56,27 @@ dependencies {
 	testCompile "junit:junit:4.12"
 }
 
+task run(type: JavaExec) {
+	classpath sourceSets.main.runtimeClasspath
+	main = "Main"
+}
+
+jar {
+	baseName += '-full'
+	destinationDirectory = file("$rootDir/jar")
+	from(configurations.runtimeClasspath.collect {
+		it.getName().endsWithAny(".jar", ".zip") ? zipTree(it) : it
+	}) {
+		exclude "META-INF/*.SF"
+		exclude "META-INF/*.RSA"
+		exclude "META-INF/MANIFEST.MF"
+		exclude "META-INF/LICENSE"
+	}
+	manifest {
+		attributes 'Main-Class': 'Main'
+	}
+}
+
 compileKotlin {
 	kotlinOptions.jvmTarget = "1.8"
 }
