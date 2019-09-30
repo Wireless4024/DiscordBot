@@ -1,6 +1,7 @@
 package com.wireless4024.discordbot.internal.config
 
 import com.keelar.exprk.Expressions
+import com.wireless4024.discordbot.internal.Property
 import org.bson.types.ObjectId
 import java.math.BigDecimal
 import java.nio.ByteBuffer
@@ -43,7 +44,7 @@ data class DiscordServer(
 }
 
 data class Setting(
-	var prefix: String = "--",
+	var prefix: String = Property.PREFIX,
 	var exprk: ExprkSetting? = ExprkSetting(),
 	var music: MusicSetting? = MusicSetting()
 ) {
