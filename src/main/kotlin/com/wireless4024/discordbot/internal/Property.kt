@@ -43,7 +43,7 @@ interface Property {
 				exitProcess(-1)
 			}
 			val cfg = ObjectMapper().readValue(configFile.readText(), Config::class.java)
-			if (cfg.token == "") {
+			if (cfg.token in arrayOf("", "your discord bot token here")) {
 				System.err.println("missing token! please edit your config file")
 				System.err.println("file should be here ${configFile.absoluteFile}")
 				exitProcess(-1)
