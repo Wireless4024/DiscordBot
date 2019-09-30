@@ -17,9 +17,8 @@ public class Main {
 			                                                         .build());
 		} catch (Throwable e) {
 			Utils.error(e.getMessage() == null ? e.toString() : e.getMessage());
-		} new JDABuilder(AccountType.BOT).setToken(
-				Property.getTOKEN())//.setAudioSendFactory(new NativeAudioSendFactory())
-		                                 .addEventListeners(new com.wireless4024.discordbot.internal.Handler()).build();
+		}
+
 		ConfigurationCache.Companion.init();
 	}
 }
