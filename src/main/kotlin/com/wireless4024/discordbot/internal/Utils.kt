@@ -3,6 +3,7 @@ package com.wireless4024.discordbot.internal
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory
 import com.wireless4024.discordbot.command.string.regex
 import okhttp3.OkHttpClient
+import java.awt.GraphicsEnvironment
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
@@ -10,6 +11,9 @@ import java.util.concurrent.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
+import javax.swing.JFrame
+import javax.swing.JOptionPane
+import kotlin.system.exitProcess
 
 class Utils {
 	companion object {
@@ -139,6 +143,21 @@ class Utils {
 				if (milli > 2) message += "s"
 			}
 			return message.trimStart()
+		}
+
+		@JvmStatic
+		fun error(message: String) {
+			System.err.println(message)
+			if (!GraphicsEnvironment.isHeadless()) {
+				val opt = JOptionPane.showConfirmDialog(
+					JFrame(),
+					message,
+					"Error!",
+					JOptionPane.OK_OPTION,
+					JOptionPane.INFORMATION_MESSAGE
+				)
+			}
+			exitProcess(-1)
 		}
 	}
 }

@@ -5,7 +5,6 @@ import com.wireless4024.discordbot.internal.Property
 import com.wireless4024.discordbot.internal.Utils
 import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.JDABuilder
-import kotlin.system.exitProcess
 
 fun main() {
 	System.setProperty("idea.io.use.fallback", "true")
@@ -16,8 +15,7 @@ fun main() {
 			.addEventListeners(Utils.globalEvent)
 			.build()
 	} catch (e: Throwable) {
-		e.printStackTrace()
-		exitProcess(-1)
+		Utils.error(e.message ?: e.toString())
 	}
 	ConfigurationCache.init()
 }

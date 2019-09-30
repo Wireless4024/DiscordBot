@@ -1,4 +1,6 @@
+import com.wireless4024.discordbot.internal.ConfigurationCache;
 import com.wireless4024.discordbot.internal.Property;
+import com.wireless4024.discordbot.internal.Utils;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDABuilder;
 
@@ -8,9 +10,16 @@ public class Main {
 			System.out.close(); System.err.close();
 		}
 
-		System.setProperty("idea.io.use.fallback", "true");
-
-		new JDABuilder(AccountType.BOT).setToken(Property.getTOKEN())//.setAudioSendFactory(new NativeAudioSendFactory())
-		                               .addEventListeners(new com.wireless4024.discordbot.internal.Handler()).build();
+		System.setProperty("idea.io.use.fallback", "true"); try {
+			Property.Companion.setJDA(new JDABuilder(AccountType.BOT).setToken(Property.getTOKEN())
+			                                                         //.setAudioSendFactory(NativeAudioSendFactory())
+			                                                         .addEventListeners(Utils.getGlobalEvent())
+			                                                         .build());
+		} catch (Throwable e) {
+			Utils.error(e.getMessage() == null ? e.toString() : e.getMessage());
+		} new JDABuilder(AccountType.BOT).setToken(
+				Property.getTOKEN())//.setAudioSendFactory(new NativeAudioSendFactory())
+		                                 .addEventListeners(new com.wireless4024.discordbot.internal.Handler()).build();
+		ConfigurationCache.Companion.init();
 	}
 }

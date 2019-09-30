@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Member
 import java.io.File
-import kotlin.system.exitProcess
 
 interface Property {
 	companion object {
@@ -38,15 +37,11 @@ interface Property {
 			val configFile = File("discordbot-config.json")
 			if (!configFile.exists()) {
 				configFile.writeText(ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(Config()))
-				System.err.println("""configuration file not found! please edit your config file!""")
-				System.err.println("file should be here ${configFile.absoluteFile}")
-				exitProcess(-1)
+				Utils.error("configuration file not found! please edit your config file!\nfile should be here ${configFile.absoluteFile}")
 			}
 			val cfg = ObjectMapper().readValue(configFile.readText(), Config::class.java)
 			if (cfg.token in arrayOf("", "your discord bot token here")) {
-				System.err.println("missing token! please edit your config file")
-				System.err.println("file should be here ${configFile.absoluteFile}")
-				exitProcess(-1)
+				Utils.error("missing token! please edit your config file\nfile should be here ${configFile.absoluteFile}")
 			}
 			TOKEN = cfg.token
 			YTTOKEN = cfg.yttoken
