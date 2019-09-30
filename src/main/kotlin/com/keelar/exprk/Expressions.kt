@@ -247,7 +247,7 @@ class Expressions {
 		var a: BigInteger = BigInteger.ZERO
 		var b: BigInteger = BigInteger.ONE
 		var c: BigInteger
-		for (j in 2..n) {
+		for (j in 1..n) {
 			c = a.add(b)
 			a = b
 			b = c
