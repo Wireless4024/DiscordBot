@@ -7,6 +7,9 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import java.security.SecureRandom
+import kotlin.math.max
+import kotlin.math.min
 
 class ExpressionException(message: String) : RuntimeException(message)
 
@@ -155,6 +158,20 @@ class Expressions {
 			BigDecimalMath.root(it.first(), it[1], evaluator.context)
 		}
 
+		evaluator.addFunction(arrayOf("rand", "random")) {
+			if (it.isEmpty()) throw ExpressionException("random requires at least one argument")
+			random(
+				it[0].toBigInteger(),
+				it.getOrNull(1)?.toBigInteger() ?: BigInteger.ZERO,
+				it.getOrNull(2)?.toInt() ?: 0,
+				it.getOrNull(3)?.toInt() ?: 0
+			)
+		}
+
+		evaluator.addFunction(arrayOf("gauss", "gaussian")) {
+			gaussian(it.getOrNull(0)?.toInt() ?: 8)
+		}
+
 		evaluator.addFunction("round") {
 			if (it.size !in listOf(1, 2)) throw ExpressionException(
 				"round requires either one or two it"
@@ -187,6 +204,45 @@ class Expressions {
 	val roundingMode: RoundingMode
 		get() = evaluator.context.roundingMode
 
+	val hundred: BigInteger = BigInteger.TEN.pow(2)
+
+	private fun gaussian(digits: Int): BigDecimal {
+		val digit = if (digits > precision) precision else max(digits, 2)
+		val low = BigInteger.TEN.pow(digit - 2)
+		println("min :$low")
+		println("max :${low.multiply(hundred) - BigInteger.ONE}")
+		return BigDecimal(random(low.multiply(hundred) - BigInteger.ONE, low), digit)
+	}
+
+	private fun random(
+		max: BigInteger,
+		min: BigInteger = BigInteger.ZERO,
+		scaleMin: Int = 0,
+		scaleMax: Int = 0
+	): BigDecimal {
+		val (mx, mn) = if (max > min) max to min else min to max
+		val (smx, smn) = if (scaleMax > scaleMin) scaleMax to scaleMin else scaleMin to scaleMax
+		return BigDecimal(
+			if (mn.signum() == 0) random(mx) else random(mx - mn + BigInteger.ONE) + mn,
+			random(smx, smn)
+		)
+	}
+
+	private fun random(max: Int, min: Int): Int {
+		return if (min == max) max else SecureRandom().nextInt(max - min) + min
+	}
+
+	private fun random(max: BigInteger, min: BigInteger = BigInteger.ZERO): BigInteger {
+		return if (min.signum() == 0) random(max) else random(max - min) + min
+	}
+
+	private fun random(max: BigInteger): BigInteger {
+		val rnd = SecureRandom()
+		var randomNumber: BigInteger
+		do randomNumber = BigInteger(max.bitLength(), rnd) while (randomNumber >= max)
+		return randomNumber
+	}
+
 	private fun fib(n: Int): BigInteger {
 		var a: BigInteger = BigInteger.ZERO
 		var b: BigInteger = BigInteger.ONE
@@ -206,7 +262,7 @@ class Expressions {
 		if (precision == 0)
 			throw CommandError("infinity precision now allowed")
 
-		evaluator.context = MathContext(precision, roundingMode)
+		evaluator.context = MathContext(min(precision, 1950), roundingMode)
 
 		define("pi", BigDecimalMath.pi(evaluator.context), true)
 		define("e", BigDecimalMath.e(evaluator.context), true)
