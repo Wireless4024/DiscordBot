@@ -58,3 +58,5 @@ or if you want to run bot in *background* on **linux** use this
 ```
 java -jar DiscordBot-all-xxx.jar silent & disown
 ```
+
+for more details please read [wiki](https://github.com/Wireless4024/DiscordBot/wiki)
