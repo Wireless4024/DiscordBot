@@ -121,15 +121,15 @@ internal class Evaluator : ExprVisitor<BigDecimal> {
 	}
 
 	private infix fun BigDecimal.nand(right: BigDecimal): BigDecimal {
-		return BigDecimal(this.toBigInteger().xor(right.toBigInteger()))
+		return BigDecimal(this.toBigInteger().and(right.toBigInteger()).not())
 	}
 
 	private infix fun BigDecimal.nor(right: BigDecimal): BigDecimal {
-		return BigDecimal(this.toBigInteger().xor(right.toBigInteger()))
+		return BigDecimal(this.toBigInteger().or(right.toBigInteger()).not())
 	}
 
 	private infix fun BigDecimal.nxor(right: BigDecimal): BigDecimal {
-		return BigDecimal(this.toBigInteger().xor(right.toBigInteger()))
+		return BigDecimal(this.toBigInteger().xor(right.toBigInteger()).not())
 	}
 
 	private infix fun BigDecimal.rol(bright: BigDecimal): BigDecimal {
