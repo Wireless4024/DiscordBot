@@ -37,7 +37,7 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 				ch.send(text) {
 					if (!permanent) {
 						try {
-							it.delete().queueAfter(Property.BASE_SLEEP_DELAY, SECONDS, {}, {})
+							it.delete().queueAfter(Property.LONG_TIMEOUT, SECONDS, {}, {})
 						} catch (e: Exception) {
 						}
 					}

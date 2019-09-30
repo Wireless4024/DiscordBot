@@ -155,7 +155,7 @@ class Controller(val parent: ConfigurationCache) {
 		if (parent["leaving"])
 			return@launch
 		parent["leaving"] = true
-		delay(Property.BASE_SLEEP_DELAY_MILLI)
+		delay(Property.LONG_TIMEOUT_MILLI)
 		if (player.isPaused || (player.playingTrack == null && (scheduler.size() == 0)))
 			parent.audioManager.closeAudioConnection()
 		parent["leaving"] = false

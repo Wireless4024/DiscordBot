@@ -34,7 +34,7 @@ fun MessageChannel.send(msg: Any?, success: (Message) -> Unit? = {}) {
 
 fun MessageChannel.sendThenDelete(
 	msg: Any?,
-	timeout: Long = Property.BASE_SLEEP_DELAY,
+	timeout: Long = Property.LONG_TIMEOUT,
 	timeUnit: TimeUnit = TimeUnit.SECONDS
 ) {
 	this.send(msg) {
@@ -46,17 +46,6 @@ fun MessageChannel.sendThenDelete(
 			}
 		/*@formatter:on*/
 	}
-}
-
-fun MessageEmbed.toString(): String {
-	var str = ""
-	this.fields.forEach { str += "${it.name} -> ${it.value}" }
-	return """----EMBED----
-${this.title}
-${this.description}
-by ${this.author}
-$str
-----EMBED----"""
 }
 
 operator fun CommandLine.get(index: Int): String? {

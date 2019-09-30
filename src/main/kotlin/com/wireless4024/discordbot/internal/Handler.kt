@@ -31,7 +31,7 @@ class Handler : ListenerAdapter() {
 						MessageEvent(event).reply(re)
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.BASE_SLEEP_DELAY, SECONDS)
+								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
 						} catch (e: Exception) {
 						}
 					}
@@ -51,7 +51,7 @@ class Handler : ListenerAdapter() {
 					ApplicationScope.launch1 {
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.BASE_SLEEP_DELAY, SECONDS)
+								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
 						} catch (e: Exception) {
 						}
 					}
@@ -65,7 +65,7 @@ class Handler : ListenerAdapter() {
 					ApplicationScope.launch1 {
 						try {
 							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.BASE_SLEEP_DELAY, SECONDS)
+								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
 						} catch (e: Exception) {
 						}
 					}

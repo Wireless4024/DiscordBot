@@ -47,7 +47,7 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 		}
 
 		fun submit() {
-			val db = KMongo.createClient().coroutine.getDatabase("w4024-discordbot-v2")
+			val db = KMongo.createClient().coroutine.getDatabase(Property.dbname)
 				.getCollection<DiscordServer>("setting")
 			runBlocking {
 				Cache.forEach() { (_, it) -> launch { db.save(it.serialize()) } }
@@ -116,7 +116,7 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 	val audioManager
 		get() = guild.audioManager
 
-	var Expressions = com.keelar.exprk.Expressions()
+	var Expressions = Expressions()
 
 	fun closeAudioConnection() = audioManager.closeAudioConnection()
 

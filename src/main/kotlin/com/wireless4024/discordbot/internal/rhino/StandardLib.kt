@@ -25,6 +25,9 @@ class StandardLib {
 		stdout.append(value).append('\n')
 	}
 
+	fun className(value: Any?) = value?.javaClass?.simpleName ?: "null"
+	fun fullClassName(value: Any?) = value?.javaClass?.name ?: "null"
+
 	fun request(url: String, method: String, data: Any? = null): String {
 		val target = URL(Utils.getFinalURL(if (url.startsWith("http")) url else "http://$url"))
 		val contents: InputStream
@@ -146,9 +149,9 @@ class StandardLib {
 	private fun toUrlEncoded(obj: NativeObject): String {
 		val out = java.lang.StringBuilder(obj.size * 20)
 		obj.forEach { key, value ->
-			out.append(URLEncoder.encode(toString(key), Charsets.UTF_8))
+			out.append(URLEncoder.encode(toString(key), "UTF-8"))
 				.append('=')
-				.append(URLEncoder.encode(toString(value, true), Charsets.UTF_8))
+				.append(URLEncoder.encode(toString(value, true), "UTF-8"))
 				.append('&')
 		}
 		return out.toString().let { if (it.isNotEmpty()) it.dropLast(1) else it }
