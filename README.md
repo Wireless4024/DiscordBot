@@ -22,14 +22,21 @@
   + [Rhino-Sandbox](https://github.com/javadelight/delight-rhino-sandbox)
     > *Sandboxes Javascript engine*  
  
-### Quick start
+## Quick start
+### Windows Only
+1. download [DiscordBot latest](https://github.com/Wireless4024/DiscordBot/archive/master.zip)
+1. extract zip into somewhere
+1. goto target folder and double click `build-jar.bat`
+1. wait until finish then `DiscordBot-all-xxx.jar` is in `jar` folder
+### via Command Line
 ```
 git clone https://github.com/Wireless4024/DiscordBot.git
 cd DiscordBot
-gradlew jar
+./gradlew jar
 ```
-+ now wait until finish.  
-+ then your `DiscordBot-all-xxx.jar` will be in `jar` folder. then move it to somewhere you want  
+
+**after build jar**
++ your `DiscordBot-all-xxx.jar` will be in `jar` folder. then move it to somewhere you want  
 + first time when you run<sup><a href="#to-run-bot-on-your-computer">[1]</a></sup> it nothing happen but it will generate `discordbot-config.json` (if it doesn't generate please run as root or administrator)
 
 |key|example|description|  
