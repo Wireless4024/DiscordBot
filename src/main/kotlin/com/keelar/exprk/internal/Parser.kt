@@ -79,14 +79,14 @@ internal class Parser(private val tokens: List<Token>) {
 			left = BinaryExpr(left, operator, right)
 		}
 
-		while (match(OR)) {
+		while (match(XOR)) {
 			val operator = previous()
 			val right = unary()
 
 			left = BinaryExpr(left, operator, right)
 		}
 
-		while (match(XOR)) {
+		while (match(OR)) {
 			val operator = previous()
 			val right = unary()
 
