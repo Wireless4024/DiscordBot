@@ -99,14 +99,15 @@ class Utils {
 		fun getFinalURL(url: String, deep: Int = 0): String {
 			if (deep > 5)
 				throw RuntimeException("redirection loop")
-			val con = URL(url).openConnection() as HttpURLConnection
+			val aurl = if (url.startsWith("http")) url else "http://$url"
+			val con = URL(aurl).openConnection() as HttpURLConnection
 			con.instanceFollowRedirects = false
 			con.connect()
 			if (con.responseCode == HttpURLConnection.HTTP_MOVED_PERM || con.responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
 				val redirectUrl = con.getHeaderField("Location")
 				return getFinalURL(redirectUrl, deep + 1)
 			}
-			return url
+			return aurl
 		}
 
 		@JvmStatic
