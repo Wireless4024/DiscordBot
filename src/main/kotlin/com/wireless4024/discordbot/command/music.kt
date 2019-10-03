@@ -24,6 +24,7 @@ class music : ICommandBase {
 			"backward", "bw" -> backward(event.dropFirst())
 			"seek"           -> seek(event.dropFirst())
 			"now"            -> now(event.dropFirst())
+			"bassbost", "bb" -> bassboost(event.dropFirst())
 			else             -> ""
 		}
 	}
