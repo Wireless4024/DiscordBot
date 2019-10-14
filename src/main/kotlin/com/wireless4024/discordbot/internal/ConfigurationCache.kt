@@ -117,11 +117,24 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 	val audioManager
 		get() = guild.audioManager
 
-	var Expressions = Expressions()
+	@Volatile var Expressions = Expressions()
 
-	var sqliteInstance: Connection? = null
+	@Volatile var sqliteInstance: Connection? = null
 
 	fun closeAudioConnection() = audioManager.closeAudioConnection()
+
+	@Volatile private var context: Context? = null
+
+	fun destroySQLiteInstance() {
+		sqliteInstance?.close()
+		sqliteInstance = null
+	}
+
+	fun runContext(evt: MessageEvent): Boolean = context?.also { it(evt) } != null
+
+	fun registerContext(name: String, fnc: (MessageEvent) -> Any?, whenClosed: (MessageEvent) -> Unit = {}) {
+		this.context = Context(name, fnc) { context = null;whenClosed(it) }
+	}
 
 	fun update(guild: Guild? = null, event: MessageEvent): ConfigurationCache = this.also {
 		if (guild != null)

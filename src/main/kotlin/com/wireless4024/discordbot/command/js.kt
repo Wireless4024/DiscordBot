@@ -11,6 +11,10 @@ import org.apache.commons.cli.Option
 class js : ICommandBase {
 
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
+		if (event.msg.equals("enter", true)) {
+			event.configuration.registerContext("js", { "```\n${it.configuration.JavascriptEngine.eval(it.msg)}\n```" })
+			return "now you can type Javascript script into chat to execute Javascript!"
+		}
 		return "```${event.configuration.JavascriptEngine.eval(event.msg)}```"
 	}
 

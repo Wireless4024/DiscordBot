@@ -1,6 +1,7 @@
 package com.wireless4024.discordbot.internal
 
 import com.wireless4024.discordbot.internal.Property.Companion.ApplicationScope
+import com.wireless4024.discordbot.internal.Utils.Companion.consume
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.ChannelType.TEXT
@@ -25,15 +26,14 @@ class Handler : ListenerAdapter() {
 				val messageText = message.contentDisplay
 				val ev = MessageEvent(event)
 				Utils.log("[${message.member!!.getFullName()}] : $messageText", deep = 2)
+
+				if (ev.configuration.runContext(ev)) return@launch
+
 				val re = if (message.contentRaw.startsWith('/')) Utils.ifRegex(message.contentRaw) else null
 				if (re != null) {
 					ApplicationScope.launch1 {
 						MessageEvent(event).reply(re)
-						try {
-							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
-						} catch (e: Exception) {
-						}
+						consume(event, false)
 					}
 					return@launch
 				}
@@ -42,33 +42,21 @@ class Handler : ListenerAdapter() {
 					                           SECONDS,
 					                           Callable {
 						                           ev.configuration.Expressions
-							                           .evalToString(messageText.substring(1))
+								                           .evalToString(messageText.substring(1))
 					                           })
-						?: "Execution timeout"
+					             ?: "Execution timeout"
 					if (number == "Execution timeout")
 						Utils.log("'${messageText}' execute too long")
 					MessageEvent(event).reply(number)
-					ApplicationScope.launch1 {
-						try {
-							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
-						} catch (e: Exception) {
-						}
-					}
+					consume(event)
 				}
 				if (messageText.startsWith(ev.configuration.prefix)) {
 					ICommandBase.invokeCommand(
-						Property.Commands[Utils.getCommand(messageText, ev.configuration.prefix)],
-						Utils.getParameter(messageText),
-						ev
+							Property.Commands[Utils.getCommand(messageText, ev.configuration.prefix)],
+							Utils.getParameter(messageText),
+							ev
 					)
-					ApplicationScope.launch1 {
-						try {
-							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
-						} catch (e: Exception) {
-						}
-					}
+					consume(event)
 				}
 			}
 		}

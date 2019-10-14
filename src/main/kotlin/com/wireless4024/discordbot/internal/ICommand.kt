@@ -28,8 +28,8 @@ interface ICommandBase {
 				}
 				Utils.log("Invoking command '${cm.name()}'")
 				val msg = cm(
-					if (cm.needArguments()) cm.parse(split.findAll(args).map { trim(it.value) }.toList().toTypedArray()) else EmptyCommandLine,
-					event
+						if (cm.needArguments()) cm.parse(split.findAll(args).map { trim(it.value) }.toList().toTypedArray()) else EmptyCommandLine,
+						event
 				)
 				if (msg?.isUnit() != true)
 					event.reply = msg
@@ -41,10 +41,10 @@ interface ICommandBase {
 				event.reply = run {
 					val opt = CollectibleOutputStream()
 					HelpFormatter().printHelp(
-						PrintWriter(opt), 30,
-						cm.name(), "",
-						cm.genOptions(),
-						0, 0, ""
+							PrintWriter(opt), 30,
+							cm.name(), "",
+							cm.genOptions(),
+							0, 0, ""
 					)
 					opt.collect()
 				}
@@ -57,7 +57,7 @@ interface ICommandBase {
 	}
 
 	@Throws
-	operator fun invoke(args: CommandLine, event: MessageEvent): Any
+	operator fun invoke(args: CommandLine = EmptyCommandLine, event: MessageEvent): Any
 
 	fun name(): String = javaClass.simpleName
 

@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.concurrent.TimeUnit.SECONDS
 
-open class MessageEvent(private val e: MessageReceivedEvent?) {
+open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean = false) {
 	val ev
 		get() = this.e
 	val ch
@@ -21,7 +21,8 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 		set(text) = this.reply(text, deep = 1)
 	var permreply: Any? = null
 		set(text) = this.reply(text, true)
-	open var msg = Utils.getParameter(this.e!!.message.contentDisplay.trim('`', ' '))
+	open var msg = if (raw) this.e!!.message.contentDisplay else
+		Utils.getParameter(this.e!!.message.contentDisplay.trim('`', ' '))
 	val guild
 		get() = this.e!!.guild
 	val configuration
@@ -29,6 +30,10 @@ open class MessageEvent(private val e: MessageReceivedEvent?) {
 	val voiceChannel
 		get() = member.voiceState?.channel
 	val musicController = configuration.musicController
+
+	fun asRaw(): MessageEvent = MessageEvent(e, true)
+
+	fun consume() = Utils.consume(ev)
 
 	open fun reply(text: Any?, permanent: Boolean = false, deep: Int = 0) {
 		runBlocking {

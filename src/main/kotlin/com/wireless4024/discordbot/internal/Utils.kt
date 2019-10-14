@@ -2,12 +2,15 @@ package com.wireless4024.discordbot.internal
 
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory
 import com.wireless4024.discordbot.command.string.regex
+import kotlinx.coroutines.launch
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import okhttp3.OkHttpClient
 import java.awt.GraphicsEnvironment
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.TimeUnit.SECONDS
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
@@ -29,7 +32,7 @@ class Utils {
 		val HTTPClient = OkHttpClient()
 		@JvmStatic
 		val URL_Regex = Pattern.compile(
-			"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
+				"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
 		)
 
 		@JvmStatic
@@ -52,16 +55,16 @@ class Utils {
 		@JvmStatic
 		fun log(msg: Any?, level: Level = Level.INFO, deep: Int = 0) {
 			logger.logp(
-				level,
-				Thread.currentThread().stackTrace[3 + deep].className,
-				Thread.currentThread().stackTrace[3 + deep].methodName,
-				"@${Date()}\n" + msg.toString()
+					level,
+					Thread.currentThread().stackTrace[3 + deep].className,
+					Thread.currentThread().stackTrace[3 + deep].methodName,
+					"@${Date()}\n" + msg.toString()
 			)
 		}
 
 		@JvmStatic
 		val regexisregex =
-			Regex("^/((?![*+?])(?:[^\\r\\n\\[/\\\\]|\\\\.|\\[(?:[^\\r\\n\\]\\\\]|\\\\.)*])+)/")
+				Regex("^/((?![*+?])(?:[^\\r\\n\\[/\\\\]|\\\\.|\\[(?:[^\\r\\n\\]\\\\]|\\\\.)*])+)/")
 
 		@JvmStatic
 		fun ifRegex(string: String): String? {
@@ -151,14 +154,34 @@ class Utils {
 			System.err.println(message)
 			if (!GraphicsEnvironment.isHeadless()) {
 				val opt = JOptionPane.showConfirmDialog(
-					JFrame(),
-					message,
-					"Error!",
-					JOptionPane.OK_OPTION,
-					JOptionPane.INFORMATION_MESSAGE
+						JFrame(),
+						message,
+						"Error!",
+						JOptionPane.OK_OPTION,
+						JOptionPane.INFORMATION_MESSAGE
 				)
 			}
 			exitProcess(-1)
+		}
+
+		fun consume(event: MessageReceivedEvent?, bg: Boolean = true) {
+			if (bg)
+				Property.ApplicationScope.launch {
+					if (event != null)
+						try {
+							if (event.responseNumber != -1L)
+								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
+						} catch (e: Exception) {
+						}
+				}
+			else {
+				if (event != null)
+					try {
+						if (event.responseNumber != -1L)
+							event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
+					} catch (e: Exception) {
+					}
+			}
 		}
 	}
 }

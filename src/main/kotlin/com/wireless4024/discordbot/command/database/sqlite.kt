@@ -15,23 +15,22 @@ class sqlite : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
 		val msg = event.msg
 		if (msg.equals("destroy", true) || msg.equals("clean", true)) {
-			event.configuration.sqliteInstance?.close()
-			event.configuration.sqliteInstance = null
+			event.configuration.destroySQLiteInstance()
 			return "destroy database successful"
 		}
 		if (msg.equals("init", true)) {
 			event.configuration.sqliteInstance = DriverManager.getConnection("jdbc:sqlite::memory:")
 			return "initialized database successful"
 		}
-		val db = event.configuration.sqliteInstance
-		if (db == null || db.isClosed) {
-			event.configuration.sqliteInstance = DriverManager.getConnection("jdbc:sqlite::memory:")
-			throw RuntimeException("database instance not initialized")
+		if (msg.equals("enter", true)) {
+			if (event.configuration.sqliteInstance == null || (event.configuration.sqliteInstance?.isClosed == true))
+				event.configuration.sqliteInstance = DriverManager.getConnection("jdbc:sqlite::memory:")
+			event.configuration.registerContext("sqlite",
+			                                    { executeSQL(it) },
+			                                    { it.configuration.destroySQLiteInstance() })
+			return "now you can type SQL into chat to execute SQL!"
 		}
-		return if (msg.startsWith("SELECT", true))
-			"```\n${toString(db.createStatement().also { it.closeOnCompletion() }.executeQuery(msg))}\n```"
-		else
-			"```\n${db.createStatement().also { it.closeOnCompletion() }.executeUpdate(msg)} row(s) affected\n```"
+		return executeSQL(event)
 	}
 
 	companion object {
@@ -48,9 +47,21 @@ class sqlite : ICommandBase {
 					row[i - 1] = Rset.getString(i)
 				result.add(row)
 			}
-			if (columns.last == 1)
-				return result.joinToString("\n") { it.first() }
 			return PrettyPrinter.format(result.toTypedArray(), lineLength)
+		}
+
+		fun executeSQL(event: MessageEvent): String {
+			if (event.msg.isEmpty()) return "missing sql"
+			val db = event.configuration.sqliteInstance
+			if (db == null || db.isClosed) {
+				event.configuration.sqliteInstance = DriverManager.getConnection("jdbc:sqlite::memory:")
+				throw RuntimeException("database instance not initialized")
+			}
+			val msg = event.msg
+			return if (msg.startsWith("SELECT", true))
+				"```\n${toString(db.createStatement().also { it.closeOnCompletion() }.executeQuery(msg))}\n```"
+			else
+				"```\n${db.createStatement().also { it.closeOnCompletion() }.executeUpdate(msg)} row(s) affected\n```"
 		}
 	}
 
