@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.Guild
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import java.math.RoundingMode
+import java.sql.Connection
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ConfigurationCache private constructor(var guild: Guild, var lastEvent: MessageEvent? = null) {
@@ -37,9 +38,9 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 			runBlocking {
 				val db = KMongo.createClient().coroutine
 				launch {
-					db.getDatabase("w4024-discordbot-v2")
-						.getCollection<DiscordServer>("setting")
-						.find().toList().forEach() { deserialize(it) }
+					db.getDatabase(Property.dbname)
+							.getCollection<DiscordServer>("setting")
+							.find().toList().forEach() { deserialize(it) }
 				}
 				kotlinx.coroutines.delay(30000)
 				db.close()
@@ -48,7 +49,7 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 		fun submit() {
 			val db = KMongo.createClient().coroutine.getDatabase(Property.dbname)
-				.getCollection<DiscordServer>("setting")
+					.getCollection<DiscordServer>("setting")
 			runBlocking {
 				Cache.forEach() { (_, it) -> launch { db.save(it.serialize()) } }
 			}
@@ -118,6 +119,8 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 	var Expressions = Expressions()
 
+	var sqliteInstance: Connection? = null
+
 	fun closeAudioConnection() = audioManager.closeAudioConnection()
 
 	fun update(guild: Guild? = null, event: MessageEvent): ConfigurationCache = this.also {
@@ -138,23 +141,23 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 	fun serialize(): DiscordServer {
 		return DiscordServer(
-			DiscordServer.translateObjectID(guild.idLong),
-			guild.idLong,
-			Setting(
-				prefix,
-				ExprkSetting(
-					Expressions.precision,
-					Expressions.roundingMode.name,
-					Expressions.variables()
-				),
-				MusicSetting(
-					musicController.player().volume,
-					!musicController.player().isPaused,
-					musicController.player().playingTrack?.position ?: 0,
-					audioManager.connectedChannel?.idLong ?: 0,
-					musicController.serializeQueue()
+				DiscordServer.translateObjectID(guild.idLong),
+				guild.idLong,
+				Setting(
+						prefix,
+						ExprkSetting(
+								Expressions.precision,
+								Expressions.roundingMode.name,
+								Expressions.variables()
+						),
+						MusicSetting(
+								musicController.player().volume,
+								!musicController.player().isPaused,
+								musicController.player().playingTrack?.position ?: 0,
+								audioManager.connectedChannel?.idLong ?: 0,
+								musicController.serializeQueue()
+						)
 				)
-			)
 		)
 	}
 }
