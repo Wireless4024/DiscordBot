@@ -3,11 +3,11 @@ plugins {
 }
 
 // java discord library versions
-def jda = '4.0.0_44'
+def jda = '4.0.0_524'
 // lava player version
-def lava = '1.3.20'
+def lava = '1.3.22'
 // big-math version
-def bigmath = '2.1.0'
+def bigmath = '2.2.1'
 // reflections version
 def reflection = '0.9.11'
 // apache common cli version
