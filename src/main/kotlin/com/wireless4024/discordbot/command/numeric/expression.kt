@@ -20,6 +20,7 @@ class expression : ICommandBase {
 				"now you can type Arithmetic Expression into chat to execute calculate it!"
 			}
 			"rounding"  -> {
+				event.ensurePermission(Permission.ADMINISTRATOR)
 				when (args[1] ?: "now") {
 					"floor" -> "changed rounding mode to ${event.configuration.Expressions.setRoundingMode(FLOOR).roundingMode.name}"
 					"ceil"  -> "changed rounding mode to ${event.configuration.Expressions.setRoundingMode(CEILING).roundingMode.name}"
@@ -29,10 +30,12 @@ class expression : ICommandBase {
 			}
 			"prec",
 			"precision" -> {
+				event.ensurePermission(Permission.ADMINISTRATOR)
 				event.configuration.Expressions.setPrecision(args[1]?.toIntOrNull() ?: -1)
 				"precision is ${event.configuration.Expressions.precision}"
 			}
 			"reset"     -> {
+				event.ensurePermission(Permission.ADMINISTRATOR)
 				event.configuration.Expressions = Expressions()
 				"reset expression to default"
 			}
@@ -41,5 +44,5 @@ class expression : ICommandBase {
 	}
 
 	override val options: List<Option> = listOf()
-	override val permission: Int = Permission.ADMINISTRATOR
+	override val permission: Int = Permission.ANY
 }

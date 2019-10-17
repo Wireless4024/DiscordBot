@@ -77,6 +77,11 @@ open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean =
 			throw CommandError("You must be in voice channel to use command")
 	}
 
+	val noPermissionException = CommandError("you don't have permission to use command")
+	fun ensurePermission(permission: Int) {
+		if (!chperm(permission)) throw  noPermissionException
+	}
+
 	override fun toString(): String {
 		return msg
 	}
