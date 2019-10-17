@@ -13,6 +13,7 @@ class JsExecutor(val parent: ConfigurationCache) {
 		engine.setMaxDuration(Property.COMMAND_TIMEOUT * 1000)
 		engine.setInstructionLimit(50000)
 		engine.inject("std", STD)
+		engine.inject("global", STD.global)
 		engine.allow(String::class.java)
 		engine.evalWithGlobalScope(
 			parent.guild.id, """

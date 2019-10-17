@@ -14,9 +14,10 @@ import kotlin.math.absoluteValue
 
 class StandardLib {
 
-	val trim = Regex("[\r\n\t]+")
-	val trims = Regex("\\s+")
-	val stdout = StringBuilder()
+	private val trim = Regex("[\r\n\t]+")
+	private val trims = Regex("\\s+")
+	internal val stdout = StringBuilder()
+	@JvmField val global = org.mozilla.javascript.NativeObject()
 	fun print(value: Any?) {
 		stdout.append(toString(value))
 	}
@@ -228,6 +229,6 @@ class StandardLib {
 
 	companion object {
 		val INSTANCE = StandardLib()
-		val HttpClient = HttpClientBuilder.create().build()
+		private val HttpClient = HttpClientBuilder.create().build()
 	}
 }
