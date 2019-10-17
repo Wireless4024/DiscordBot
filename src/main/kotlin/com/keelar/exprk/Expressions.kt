@@ -314,6 +314,10 @@ class Expressions {
 		return evaluator.eval(parse(expression))
 	}
 
+	fun evalRound(expression: String): String {
+		return evaluator.eval(parse(expression)).round(evaluator.context).stripTrailingZeros().toEngineeringString()
+	}
+
 	fun evalToString(expression: String): String {
 		return try {
 			eval(expression).round(evaluator.context).stripTrailingZeros().toEngineeringString()

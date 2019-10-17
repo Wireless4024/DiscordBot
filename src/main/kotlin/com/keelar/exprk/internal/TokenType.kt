@@ -10,6 +10,7 @@ internal enum class TokenType {
 	DOUBLE_SLASH, // floor divide
 	MODULO,
 	EXPONENT,
+	CUBE,
 	ASSIGN,
 
 	// binary operators

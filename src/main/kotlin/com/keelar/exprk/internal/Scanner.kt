@@ -43,7 +43,11 @@ internal class Scanner(
 			}
 			'+'  -> addToken(PLUS)
 			'-'  -> addToken(MINUS)
-			'*'  -> if (match('*')) addToken(EXPONENT, "**") else addToken(STAR)
+			'*' ->
+				if (match('*'))
+					if (match('*')) addToken(CUBE, "***")
+					else addToken(EXPONENT, "**")
+				else addToken(STAR)
 			'/'  -> if (match('/')) addToken(DOUBLE_SLASH, "//") else addToken(SLASH)
 			'%'  -> addToken(MODULO)
 			'^'  -> addToken(XOR, "^")
