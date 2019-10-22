@@ -17,9 +17,14 @@ class StandardLib {
 	private val trim = Regex("[\r\n\t]+")
 	private val trims = Regex("\\s+")
 	internal val stdout = StringBuilder()
-	@JvmField val global = org.mozilla.javascript.NativeObject()
+	@JvmField val global = NativeObject()
+
 	fun print(value: Any?) {
 		stdout.append(toString(value))
+	}
+
+	fun clearGlobal() {
+		global.forEach { k, _ -> global.remove(k) }
 	}
 
 	fun println(value: Any?) {
@@ -219,6 +224,14 @@ class StandardLib {
 		}
 		buf.append(']')
 		dejaVu.remove(a)
+	}
+
+	internal fun globalString(): String {
+		if (global.size == 0) return ""
+		val sb = StringBuilder("var ")
+		global.forEach { k, v -> if (sb.length < 0xFFFFFF) sb.append(k).append('=').append(toString(v)).append(',') }
+		sb.deleteCharAt(sb.length - 1)
+		return sb.toString()
 	}
 
 	internal fun collectSTDOUT(): String {

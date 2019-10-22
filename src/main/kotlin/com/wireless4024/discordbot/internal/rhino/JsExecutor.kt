@@ -27,20 +27,30 @@ function post(url,data){return std.request(url,'POST',data)}
 function request(url){return std.request(url,'GET',EMPTY_OBJECT)}
 function request(url,method){return std.request(url,method,EMPTY_OBJECT)}
 function request(url,method,data){return std.request(url,method,data)}
+function clearGlobal(){std.clearGlobal()}
 """
 		)
 	}
 
 	fun eval(js: String): String {
 		try {
-			val obj = engine.eval(parent.guild.id, js)
+			val obj = engine.eval(
+				parent.guild.id, """${STD.globalString()};
+$js"""
+			)
 			if (STD.stdout.isEmpty())
 				if (obj is Undefined)
 					STD.print("undefined")
 				else
 					STD.print(obj)
 		} catch (e: Throwable) {
-			STD.print("\n" + (e.cause?.toString() ?: e.toString()))
+			val msg = e.cause?.toString() ?: e.toString()
+			if (msg.contains("is not defined")) {
+				val out = STD.stdout
+				if (out.isEmpty())
+					out.append("undefined")
+			} else
+				STD.print("\n" + msg)
 		}
 		return STD.collectSTDOUT()
 	}
