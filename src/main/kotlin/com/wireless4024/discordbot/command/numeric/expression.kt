@@ -14,12 +14,13 @@ import java.math.RoundingMode.FLOOR
 class expression : ICommandBase {
 	override fun invoke(args: CommandLine, event: MessageEvent): Any {
 		return when (args[0] ?: throw CommandError("Missing argument")) {
-			"enter" -> {
+			"enter"    -> {
 				event.configuration.registerContext("expression",
-					{ it.configuration.Expressions.evalRound(it.asRaw().msg) })
+				                                    event.ch.idLong,
+				                                    { it.configuration.Expressions.evalRound(it.asRaw().msg) })
 				"now you can type Arithmetic Expression into chat to execute calculate it!"
 			}
-			"rounding"  -> {
+			"rounding" -> {
 				event.ensurePermission(Permission.ADMINISTRATOR)
 				when (args[1] ?: "now") {
 					"floor" -> "changed rounding mode to ${event.configuration.Expressions.setRoundingMode(FLOOR).roundingMode.name}"

@@ -26,6 +26,7 @@ class sqlite : ICommandBase {
 			if (event.configuration.sqliteInstance == null || (event.configuration.sqliteInstance?.isClosed == true))
 				event.configuration.sqliteInstance = DriverManager.getConnection("jdbc:sqlite::memory:")
 			event.configuration.registerContext("sqlite",
+			                                    event.ch.idLong,
 			                                    { executeSQL(it) },
 			                                    { it.configuration.destroySQLiteInstance() })
 			return "now you can type SQL into chat to execute SQL!"

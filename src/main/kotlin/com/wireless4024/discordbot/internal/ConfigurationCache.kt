@@ -39,8 +39,8 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 				val db = KMongo.createClient().coroutine
 				launch {
 					db.getDatabase(Property.dbname)
-							.getCollection<DiscordServer>("setting")
-							.find().toList().forEach() { deserialize(it) }
+						.getCollection<DiscordServer>("setting")
+						.find().toList().forEach() { deserialize(it) }
 				}
 				kotlinx.coroutines.delay(30000)
 				db.close()
@@ -49,7 +49,7 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 		fun submit() {
 			val db = KMongo.createClient().coroutine.getDatabase(Property.dbname)
-					.getCollection<DiscordServer>("setting")
+				.getCollection<DiscordServer>("setting")
 			runBlocking {
 				Cache.forEach() { (_, it) -> launch { db.save(it.serialize()) } }
 			}
@@ -123,17 +123,17 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 	fun closeAudioConnection() = audioManager.closeAudioConnection()
 
-	@Volatile private var context: Context? = null
+	@Volatile private var context: MutableMap<Long, Context> = mutableMapOf()
 
 	fun destroySQLiteInstance() {
 		sqliteInstance?.close()
 		sqliteInstance = null
 	}
 
-	fun runContext(evt: MessageEvent): Boolean = context?.also { it(evt) } != null
+	fun runContext(evt: MessageEvent): Boolean = context.containsKey(evt.ch.idLong) && context[evt.ch.idLong]!!(evt)
 
-	fun registerContext(name: String, fnc: (MessageEvent) -> Any?, whenClosed: (MessageEvent) -> Unit = {}) {
-		this.context = Context(name, fnc) { context = null;whenClosed(it) }
+	fun registerContext(name: String, id: Long, fnc: (MessageEvent) -> Any?, whenClosed: (MessageEvent) -> Unit = {}) {
+		this.context[id] = Context(name, fnc) { context.remove(id);whenClosed(it) }
 	}
 
 	fun update(guild: Guild? = null, event: MessageEvent): ConfigurationCache = this.also {
@@ -154,23 +154,23 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 	fun serialize(): DiscordServer {
 		return DiscordServer(
-				DiscordServer.translateObjectID(guild.idLong),
-				guild.idLong,
-				Setting(
-						prefix,
-						ExprkSetting(
-								Expressions.precision,
-								Expressions.roundingMode.name,
-								Expressions.variables()
-						),
-						MusicSetting(
-								musicController.player().volume,
-								!musicController.player().isPaused,
-								musicController.player().playingTrack?.position ?: 0,
-								audioManager.connectedChannel?.idLong ?: 0,
-								musicController.serializeQueue()
-						)
+			DiscordServer.translateObjectID(guild.idLong),
+			guild.idLong,
+			Setting(
+				prefix,
+				ExprkSetting(
+					Expressions.precision,
+					Expressions.roundingMode.name,
+					Expressions.variables()
+				),
+				MusicSetting(
+					musicController.player().volume,
+					!musicController.player().isPaused,
+					musicController.player().playingTrack?.position ?: 0,
+					audioManager.connectedChannel?.idLong ?: 0,
+					musicController.serializeQueue()
 				)
+			)
 		)
 	}
 }
