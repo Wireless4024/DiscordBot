@@ -51,7 +51,7 @@ class regex : ICommandBase {
 			val breakPoint = base.lastIndexOf(' ')
 			if (breakPoint == -1)
 				return arrayOf(base, "")
-			val end = ICommandBase.split.findAll(base).last()
+			val end = Utils.word.findAll(base).last()
 			return arrayOf(base.removeRange(end.range), trim(end.value))
 		}
 

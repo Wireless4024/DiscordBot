@@ -32,11 +32,22 @@ class Utils {
 		val HTTPClient = OkHttpClient()
 		@JvmStatic
 		val URL_Regex = Pattern.compile(
-				"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
+			"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
 		)
+		@JvmStatic
+		val word = Regex("(?=\\S)[^'\\s]*(?:'[^\\\\']*(?:\\\\[\\s\\S][^\\\\']*)*'[^'\\s]*)*")
 
 		@JvmStatic
 		val globalEvent = Handler()
+
+		@JvmStatic
+		fun split(str: String) = word.findAll(str).map {
+			val word = it.value
+			return@map if (word[0] == '\'' && word[word.length - 1] == '\'') word.subSequence(
+				1,
+				word.length - 1
+			).toString() else word
+		}.toList()
 
 		@JvmStatic
 		fun <T> execute(timeout: Long, unit: TimeUnit, callback: Callable<T?>): T? {
@@ -55,16 +66,16 @@ class Utils {
 		@JvmStatic
 		fun log(msg: Any?, level: Level = Level.INFO, deep: Int = 0) {
 			logger.logp(
-					level,
-					Thread.currentThread().stackTrace[3 + deep].className,
-					Thread.currentThread().stackTrace[3 + deep].methodName,
-					"@${Date()}\n" + msg.toString()
+				level,
+				Thread.currentThread().stackTrace[3 + deep].className,
+				Thread.currentThread().stackTrace[3 + deep].methodName,
+				"@${Date()}\n" + msg.toString()
 			)
 		}
 
 		@JvmStatic
 		val regexisregex =
-				Regex("^/((?![*+?])(?:[^\\r\\n\\[/\\\\]|\\\\.|\\[(?:[^\\r\\n\\]\\\\]|\\\\.)*])+)/")
+			Regex("^/((?![*+?])(?:[^\\r\\n\\[/\\\\]|\\\\.|\\[(?:[^\\r\\n\\]\\\\]|\\\\.)*])+)/")
 
 		@JvmStatic
 		fun ifRegex(string: String): String? {
@@ -94,7 +105,6 @@ class Utils {
 			if (!URL_Regex.matcher(url).find())
 				return false
 			val furl = getFinalURL(if (url.startsWith("http")) url else "http://$url")
-			println("checking url... '${furl}'")
 			return ((URL(furl).openConnection() as HttpURLConnection).responseCode == 200)
 		}
 
@@ -154,11 +164,11 @@ class Utils {
 			System.err.println(message)
 			if (!GraphicsEnvironment.isHeadless()) {
 				val opt = JOptionPane.showConfirmDialog(
-						JFrame(),
-						message,
-						"Error!",
-						JOptionPane.OK_OPTION,
-						JOptionPane.INFORMATION_MESSAGE
+					JFrame(),
+					message,
+					"Error!",
+					JOptionPane.OK_OPTION,
+					JOptionPane.INFORMATION_MESSAGE
 				)
 			}
 			exitProcess(-1)

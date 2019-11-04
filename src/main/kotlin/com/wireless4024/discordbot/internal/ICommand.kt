@@ -1,6 +1,5 @@
 package com.wireless4024.discordbot.internal
 
-import com.wireless4024.discordbot.command.string.regex.Companion.trim
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import org.apache.commons.cli.*
 import java.io.PrintWriter
@@ -8,9 +7,7 @@ import java.io.PrintWriter
 interface ICommandBase {
 	companion object {
 		@JvmStatic
-		val split = Regex("(?=\\S)[^'\\s]*(?:'[^\\\\']*(?:\\\\[\\s\\S][^\\\\']*)*'[^'\\s]*)*")
-		@JvmStatic
-		val EmptyCommandLine = DefaultParser().parse(Options(), emptyArray())
+		val EmptyCommandLine = DefaultParser().parse(Options(), emptyArray())!!
 
 		@JvmStatic
 		fun invokeCommand(cm: Invokable?, args: String, event: MessageEvent) {
@@ -28,8 +25,8 @@ interface ICommandBase {
 				}
 				Utils.log("Invoking command '${cm.name()}'")
 				val msg = cm(
-						if (cm.needArguments()) cm.parse(split.findAll(args).map { trim(it.value) }.toList().toTypedArray()) else EmptyCommandLine,
-						event
+					if (cm.needArguments()) cm.parse(Utils.split(args).toTypedArray()) else EmptyCommandLine,
+					event
 				)
 				if (msg?.isUnit() != true)
 					event.reply = msg
