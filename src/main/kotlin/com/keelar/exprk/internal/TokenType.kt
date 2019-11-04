@@ -6,6 +6,7 @@ internal enum class TokenType {
 	PLUS,
 	MINUS,
 	STAR,
+	`STARRRRRR!`,
 	SLASH,
 	DOUBLE_SLASH, // floor divide
 	MODULO,

@@ -14,9 +14,9 @@ import kotlin.math.min
 class ExpressionException(message: String) : RuntimeException(message)
 
 @Suppress("unused")
-class Expressions {
+class Expressions @JvmOverloads constructor(private val extended: Boolean = true) {
 
-	private val evaluator = Evaluator()
+	private val evaluator: Evaluator = if (extended) ExtendedEvaluator() else DefaultEvaluator()
 
 	init {
 		define("pi", BigDecimalMath.pi(evaluator.context), true)
@@ -196,6 +196,17 @@ class Expressions {
 		evaluator.addFunction("if") {
 			if (it[0].signum() != 0) it[1] else it[2]
 		}
+
+		evaluator.addFunction("decimal") {
+			when (it.size) {
+				1    -> it[0]
+				2    -> {
+					val scale = it[0].scale() + it[1].intValueExact()
+					BigDecimal(it[0].unscaledValue(), scale)
+				}
+				else -> throw ExpressionException("decimal requires at least one argument")
+			}
+		}
 	}
 
 	val precision: Int
@@ -331,20 +342,23 @@ class Expressions {
 	}
 
 	private fun parse(tokens: List<Token>): Expr {
-		return Parser(tokens).parse()
+		return if (extended) ExtendedParser(tokens).parse() else DefaultParser(tokens).parse()
 	}
 
 	private fun scan(expression: String): List<Token> {
-		return Scanner(expression, evaluator.context).scanTokens()
+		return if (extended) ExtendedScanner(expression, evaluator.context).scanTokens() else DefaultScanner(
+			expression,
+			evaluator.context
+		).scanTokens()
 	}
 
 	fun variables(): List<Pair<String, BigDecimal>> = evaluator.variables.let {
 		val result: MutableList<Pair<String, BigDecimal>> = mutableListOf()
-		it.forEach { (k, v) -> if (k !in arrayOf("pi", "e")) result.add(k to v) }
+		it.forEach { (k, v) -> if (k !in ExtendedEvaluator.ConstantVariable) result.add(k to v) }
 		result
 	}
 
 	fun setVariables(data: List<Pair<String, BigDecimal>>) {
-		data.forEach { if (it.first !in arrayOf("pi", "e")) evaluator.variables[it.first] = it.second }
+		data.forEach { if (it.first !in ExtendedEvaluator.ConstantVariable) evaluator.variables[it.first] = it.second }
 	}
 }
