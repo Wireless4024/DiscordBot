@@ -25,4 +25,9 @@ internal interface Evaluator : ExprVisitor<BigDecimal> {
 		name: String,
 		function: (arguments: List<BigDecimal>) -> BigDecimal
 	): ExprVisitor<BigDecimal>
+
+	companion object {
+		val EmptyFunction: (List<BigDecimal>) -> BigDecimal =
+			{ args: List<BigDecimal> -> args.firstOrNull() ?: BigDecimal.ZERO }
+	}
 }

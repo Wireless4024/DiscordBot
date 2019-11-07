@@ -32,7 +32,11 @@ internal class DefaultEvaluator : Evaluator {
 		names: Array<String>,
 		function: (arguments: List<BigDecimal>) -> BigDecimal
 	): ExprVisitor<BigDecimal> {
-		TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+		names.forEach {
+			addFunction(it, function)
+		}
+
+		return this
 	}
 
 	override fun addFunction(name: String, function: (List<BigDecimal>) -> BigDecimal): ExprVisitor<BigDecimal> {
@@ -102,7 +106,7 @@ internal class DefaultEvaluator : Evaluator {
 
 	override fun visitCallExpr(expr: CallExpr): BigDecimal {
 		val name = expr.name
-		val function = functions[name.toLowerCase()] ?: throw ExpressionException("Undefined function '$name'")
+		val function = functions[name.toLowerCase()] ?: Evaluator.EmptyFunction
 
 		return function(expr.arguments.map { eval(it) })
 	}
@@ -114,7 +118,7 @@ internal class DefaultEvaluator : Evaluator {
 	override fun visitVariableExpr(expr: VariableExpr): BigDecimal {
 		val name = expr.name.lexeme
 
-		return variables[name.toLowerCase()] ?: throw ExpressionException("Undefined variable '$name'")
+		return variables[name.toLowerCase()] ?: BigDecimal.ZERO
 	}
 
 	override fun visitGroupingExpr(expr: GroupingExpr): BigDecimal {
