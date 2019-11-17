@@ -2,11 +2,14 @@ package com.keelar.exprk
 
 import ch.obermuhlner.math.big.BigDecimalMath
 import com.keelar.exprk.internal.*
+import com.keelar.exprk.internal.DefaultEvaluator.Companion.IONE
+import com.keelar.exprk.internal.DefaultEvaluator.Companion.IZERO
 import com.wireless4024.discordbot.internal.CommandError
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import java.math.RoundingMode.FLOOR
 import java.security.SecureRandom
 import kotlin.math.max
 import kotlin.math.min
@@ -14,9 +17,15 @@ import kotlin.math.min
 class ExpressionException(message: String) : RuntimeException(message)
 
 @Suppress("unused")
-class Expressions @JvmOverloads constructor(private val extended: Boolean = true) {
+class Expressions @JvmOverloads constructor(
+	private val extended: Boolean = true,
+	scale: Int = 128,
+	roundingMode: RoundingMode = FLOOR
+) {
 
-	private val evaluator: Evaluator = if (extended) ExtendedEvaluator() else DefaultEvaluator()
+	internal val evaluator: Evaluator =
+		if (extended) ExtendedEvaluator(scale, roundingMode)
+		else DefaultEvaluator(scale, roundingMode)
 
 	init {
 		define("pi", BigDecimalMath.pi(evaluator.context), true)
@@ -35,7 +44,7 @@ class Expressions @JvmOverloads constructor(private val extended: Boolean = true
 		evaluator.addFunction("sumn") {
 			if (it.isEmpty()) throw ExpressionException("sumn requires at least one argument")
 			val n = it.first().toBigInteger()
-			BigDecimal(n.add(BigInteger.ONE).multiply(n).shiftRight(1)).round(evaluator.context)
+			BigDecimal(n.add(IONE).multiply(n).shiftRight(1)).round(evaluator.context)
 		}
 
 		evaluator.addFunction("floor") {
@@ -162,7 +171,7 @@ class Expressions @JvmOverloads constructor(private val extended: Boolean = true
 			if (it.isEmpty()) throw ExpressionException("random requires at least one argument")
 			random(
 				it[0].toBigInteger(),
-				it.getOrNull(1)?.toBigInteger() ?: BigInteger.ZERO,
+				it.getOrNull(1)?.toBigInteger() ?: IZERO,
 				it.getOrNull(2)?.toInt() ?: 0,
 				it.getOrNull(3)?.toInt() ?: 0
 			)
@@ -217,24 +226,26 @@ class Expressions @JvmOverloads constructor(private val extended: Boolean = true
 
 	val hundred: BigInteger = BigInteger.TEN.pow(2)
 
+	fun reset() {
+		evaluator.reset()
+	}
+
 	private fun gaussian(digits: Int): BigDecimal {
 		val digit = if (digits > precision) precision else max(digits, 2)
 		val low = BigInteger.TEN.pow(digit - 2)
-		println("min :$low")
-		println("max :${low.multiply(hundred) - BigInteger.ONE}")
-		return BigDecimal(random(low.multiply(hundred) - BigInteger.ONE, low), digit)
+		return BigDecimal(random(low.multiply(hundred) - IONE, low), digit)
 	}
 
 	private fun random(
 		max: BigInteger,
-		min: BigInteger = BigInteger.ZERO,
+		min: BigInteger = IZERO,
 		scaleMin: Int = 0,
 		scaleMax: Int = 0
 	): BigDecimal {
 		val (mx, mn) = if (max > min) max to min else min to max
 		val (smx, smn) = if (scaleMax > scaleMin) scaleMax to scaleMin else scaleMin to scaleMax
 		return BigDecimal(
-			if (mn.signum() == 0) random(mx) else random(mx - mn + BigInteger.ONE) + mn,
+			if (mn.signum() == 0) random(mx) else random(mx - mn + IZERO) + mn,
 			random(smx, smn)
 		)
 	}
@@ -243,7 +254,7 @@ class Expressions @JvmOverloads constructor(private val extended: Boolean = true
 		return if (min == max) max else SecureRandom().nextInt(max - min) + min
 	}
 
-	private fun random(max: BigInteger, min: BigInteger = BigInteger.ZERO): BigInteger {
+	private fun random(max: BigInteger, min: BigInteger = IZERO): BigInteger {
 		return if (min.signum() == 0) random(max) else random(max - min) + min
 	}
 
@@ -255,8 +266,8 @@ class Expressions @JvmOverloads constructor(private val extended: Boolean = true
 	}
 
 	private fun fib(n: Int): BigInteger {
-		var a: BigInteger = BigInteger.ZERO
-		var b: BigInteger = BigInteger.ONE
+		var a: BigInteger = IZERO
+		var b: BigInteger = IONE
 		var c: BigInteger
 		for (j in 1..n) {
 			c = a.add(b)
@@ -333,6 +344,7 @@ class Expressions @JvmOverloads constructor(private val extended: Boolean = true
 		return try {
 			eval(expression).round(evaluator.context).stripTrailingZeros().toEngineeringString()
 		} catch (e: Throwable) {
+			e.printStackTrace()
 			e.cause?.message ?: e.message ?: e.toString()
 		}
 	}

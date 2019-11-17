@@ -6,10 +6,11 @@ import com.keelar.exprk.internal.TokenType.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
-import java.math.RoundingMode.FLOOR
+import java.math.RoundingMode
 
-internal class DefaultEvaluator : Evaluator {
-	override var context: MathContext = MathContext(128, FLOOR)
+internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evaluator {
+
+	override var context: MathContext = MathContext(scale, roundingMode)
 
 	override val variables: HashMap<String, BigDecimal> = hashMapOf()
 	private val functions: MutableMap<String, (List<BigDecimal>) -> BigDecimal> = mutableMapOf()
@@ -118,7 +119,7 @@ internal class DefaultEvaluator : Evaluator {
 	override fun visitVariableExpr(expr: VariableExpr): BigDecimal {
 		val name = expr.name.lexeme
 
-		return variables[name.toLowerCase()] ?: BigDecimal.ZERO
+		return variables[name.toLowerCase()] ?: ZERO
 	}
 
 	override fun visitGroupingExpr(expr: GroupingExpr): BigDecimal {
@@ -126,6 +127,7 @@ internal class DefaultEvaluator : Evaluator {
 	}
 
 	companion object {
+		/* NOT NULLABLE constants kotlin will check this at single time */
 		@JvmField val ZERO: BigDecimal = BigDecimal.ZERO
 		@JvmField val ONE: BigDecimal = BigDecimal.ONE
 		@JvmField val IZERO: BigInteger = BigInteger.ZERO

@@ -1,5 +1,7 @@
 package com.keelar.exprk.internal
 
+import ch.obermuhlner.math.big.BigDecimalMath
+import com.keelar.exprk.internal.DefaultEvaluator.Companion.ZERO
 import java.math.BigDecimal
 import java.math.MathContext
 
@@ -26,8 +28,16 @@ internal interface Evaluator : ExprVisitor<BigDecimal> {
 		function: (arguments: List<BigDecimal>) -> BigDecimal
 	): ExprVisitor<BigDecimal>
 
+	fun reset() {
+		val pi = variables["pi"]
+		val e = variables["e"]
+		variables.clear()
+		variables["pi"] = pi ?: BigDecimalMath.pi(context)
+		variables["e"] = e ?: BigDecimalMath.e(context)
+	}
+
 	companion object {
 		val EmptyFunction: (List<BigDecimal>) -> BigDecimal =
-			{ args: List<BigDecimal> -> args.firstOrNull() ?: BigDecimal.ZERO }
+			{ args: List<BigDecimal> -> args.firstOrNull() ?: ZERO }
 	}
 }

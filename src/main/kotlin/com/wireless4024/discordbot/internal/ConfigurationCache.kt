@@ -106,6 +106,8 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 
 	val JavascriptEngine = JsExecutor(this)
 
+	val FunctionX = functionx()
+
 	val musicController = Controller(this)
 
 	var prefix = Property.PREFIX

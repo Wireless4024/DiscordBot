@@ -1,11 +1,13 @@
 package com.wireless4024.discordbot.internal
 
+import ch.obermuhlner.math.big.BigDecimalMath
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.apache.commons.cli.CommandLine
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
@@ -80,4 +82,25 @@ fun String.parseBigInteger(): BigInteger? {
 	if (this.startsWith("0x", true)) return this.drop(2).toBigIntegerOrNull(16)
 	if (this.startsWith("0", true)) return this.drop(1).toBigIntegerOrNull(8)
 	return this.toBigIntegerOrNull()
+}
+
+fun String.parseBigDecimal(): BigDecimal? {
+	try {
+		if (isEmpty()) return BigDecimal.ZERO
+		return BigDecimalMath.toBigDecimal(this)
+	} catch (e: Throwable) {
+		return null
+	}
+}
+
+fun String.hasBefore(char: Char, pos: Int): Boolean {
+	var now = pos - 1
+	var currentChar: Char
+	while (now > 0) {
+		currentChar = this[now]
+		if (currentChar.isWhitespace())
+			--now
+		else return currentChar == char
+	}
+	return false
 }

@@ -7,19 +7,22 @@ import com.keelar.exprk.internal.DefaultEvaluator.Companion.ExprAnd
 import com.keelar.exprk.internal.DefaultEvaluator.Companion.ExprOr
 import com.keelar.exprk.internal.DefaultEvaluator.Companion.IONE
 import com.keelar.exprk.internal.DefaultEvaluator.Companion.IZERO
+import com.keelar.exprk.internal.DefaultEvaluator.Companion.ZERO
 import com.keelar.exprk.internal.TokenType.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
+import java.math.RoundingMode
 import java.math.RoundingMode.FLOOR
 
-internal class ExtendedEvaluator : Evaluator {
+internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evaluator {
+
 	companion object {
 		@JvmField
 		internal val ConstantVariable = arrayOf("pi", "e")
 	}
 
-	override var context: MathContext = MathContext(128, FLOOR)
+	override var context: MathContext = MathContext(scale, roundingMode)
 
 	override val variables: HashMap<String, BigDecimal> = hashMapOf()
 	private val functions: MutableMap<String, (List<BigDecimal>) -> BigDecimal> = mutableMapOf()
@@ -192,7 +195,7 @@ internal class ExtendedEvaluator : Evaluator {
 	override fun visitVariableExpr(expr: VariableExpr): BigDecimal {
 		val name = expr.name.lexeme
 
-		return variables[name.toLowerCase()] ?: BigDecimal.ZERO
+		return variables[name.toLowerCase()] ?: ZERO
 	}
 
 	override fun visitGroupingExpr(expr: GroupingExpr): BigDecimal {

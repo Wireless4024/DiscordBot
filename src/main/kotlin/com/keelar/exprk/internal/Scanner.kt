@@ -20,10 +20,10 @@ internal interface Scanner {
 			previousChar: Char = '\u0000',
 			nextChar: Char = '\u0000'
 		): Boolean {
-			return char in '0'..'9' || when (char) {
+			return char in digits || when (char) {
 				'.'      -> previousChar != '.' && nextChar != '.'
-				'e', 'E' -> previousChar.isDigit() && (nextChar.isDigit() || nextChar == '+' || nextChar == '-')
-				'+', '-' -> (previousChar == 'e' || previousChar == 'E') && nextChar.isDigit()
+				'e', 'E' -> previousChar in digits && (nextChar in digits || nextChar == '+' || nextChar == '-')
+				'+', '-' -> (previousChar == 'e' || previousChar == 'E') && nextChar in digits
 				else     -> false
 			}
 		}
