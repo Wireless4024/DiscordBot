@@ -3,20 +3,51 @@ package com.wireless4024.discordbot.internal
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.concurrent.TimeUnit.SECONDS
 
 open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean = false) {
+	/**
+	 * get original [MessageReceivedEvent] object from JDA
+	 * @see net.dv8tion.jda.api.hooks.ListenerAdapter.onMessageReceived
+	 */
 	val ev
 		get() = this.e
+
+	/**
+	 * get [MessageChannel] object that message recieved
+	 * @see MessageReceivedEvent.getChannel
+	 */
 	val ch
 		get() = this.e!!.channel
+
+	/**
+	 * get User object who send this message
+	 * @see MessageReceivedEvent.getAuthor
+	 */
 	val user
 		get() = this.e!!.author
+
+	/**
+	 * get Member object who send this message
+	 * @see MessageReceivedEvent.getMember
+	 */
 	val member
 		get() = this.e!!.member!!
+
+	/**
+	 * get [TextChannel] object that message recieveds
+	 * @see MessageReceivedEvent.getTextChannel
+	 */
 	val txtch
 		get() = this.e!!.textChannel
+
+	/**
+	 * reply Text or Message or MessageEmbed to TextChannel
+	 * @see MessageChannel.sendMessage
+	 */
 	var reply: Any? = null
 		set(text) = this.reply(text, deep = 1)
 	var permreply: Any? = null
