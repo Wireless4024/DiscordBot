@@ -1,10 +1,10 @@
 package com.wireless4024.discordbot.command
 
+import com.wireless4024.discordbot.internal.Handler
 import com.wireless4024.discordbot.internal.ICommandBase
 import com.wireless4024.discordbot.internal.MessageEvent
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import com.wireless4024.discordbot.internal.SkipArguments
-import com.wireless4024.discordbot.internal.Utils
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
@@ -25,7 +25,7 @@ class resend : ICommandBase {
 					)
 				}
 			}
-		Utils.globalEvent.onMessageReceived(MessageReceivedEvent(event.ev!!.jda, -1, message))
+		Handler.instance.onMessageReceived(MessageReceivedEvent(event.ev!!.jda, -1, message))
 		return "resend '${message.contentRaw}'"
 	}
 

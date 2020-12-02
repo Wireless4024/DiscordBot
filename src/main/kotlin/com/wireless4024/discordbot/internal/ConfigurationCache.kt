@@ -18,12 +18,16 @@ import net.dv8tion.jda.api.audio.AudioSendHandler
 import net.dv8tion.jda.api.entities.Guild
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
+import java.io.IOException
 import java.math.RoundingMode
+import java.net.DatagramSocket
+import java.net.ServerSocket
 import java.sql.Connection
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ConfigurationCache private constructor(var guild: Guild, var lastEvent: MessageEvent? = null) {
 	companion object {
+
 		private val Cache = mutableMapOf<Long, ConfigurationCache>()
 
 		fun get(guild: Guild, lastEvent: MessageEvent): ConfigurationCache {
@@ -35,23 +39,45 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 		private val roundingMode = RoundingMode.values()
 
 		fun init() {
-			runBlocking {
-				val db = KMongo.createClient().coroutine
-				launch {
-					db.getDatabase(Property.dbname)
-						.getCollection<DiscordServer>("setting")
-						.find().toList().forEach() { deserialize(it) }
+			if (!isPortAvailable(27017)) return
+			try {
+				runBlocking {
+					val db = KMongo.createClient().coroutine
+					launch {
+						db.getDatabase(Property.dbname)
+							.getCollection<DiscordServer>("setting")
+							.find().toList().forEach() { deserialize(it) }
+					}.join()
+					kotlinx.coroutines.delay(5000)
+					db.close()
 				}
-				kotlinx.coroutines.delay(30000)
-				db.close()
+			} catch (t: Throwable) {
+			}
+		}
+
+		/**
+		 * Check to see if a port is available.
+		 *
+		 * @param port
+		 * the port to check for availability.
+		 */
+		private fun isPortAvailable(port: Int): Boolean {
+			try {
+				ServerSocket(port).use { DatagramSocket(port).use { return true } }
+			} catch (e: IOException) {
+				return false
 			}
 		}
 
 		fun submit() {
-			val db = KMongo.createClient().coroutine.getDatabase(Property.dbname)
-				.getCollection<DiscordServer>("setting")
-			runBlocking {
-				Cache.forEach() { (_, it) -> launch { db.save(it.serialize()) } }
+			if (!isPortAvailable(27017)) return
+			try {
+				val db = KMongo.createClient().coroutine.getDatabase(Property.dbname)
+					.getCollection<DiscordServer>("setting")
+				runBlocking {
+					Cache.forEach() { (_, it) -> launch { db.save(it.serialize()) } }
+				}
+			} catch (t: Throwable) {
 			}
 		}
 

@@ -40,7 +40,7 @@ internal class PrettyPrinter private constructor(private val out: StringBuilder 
 		val maxWidths = widths.size
 		val col = Array<Array<String>>(maxWidths) { emptyArray() }
 		for (i in 0 until maxWidths) col[i] = safeGet(row, i).chunked(widths[i]).toTypedArray()
-		val lines = col.asSequence().map { it.size }.max()!!
+		val lines = col.asSequence().map { it.size }.maxOrNull()!!
 		val padding = if (lines > 1) Array(maxWidths) { " ".repeat(widths[it]) } else emptyArray()
 		for (i in 0 until lines) {
 			builder.append(VERTICAL_BORDER)
@@ -98,11 +98,13 @@ internal class PrettyPrinter private constructor(private val out: StringBuilder 
 		}
 	}
 
+	@Suppress("NOTHING_TO_INLINE")
 	private inline fun getCellValue(value: Any?): String {
 		return (value?.toString() ?: asNull)
 	}
 
 	companion object {
+
 		private const val BORDER_KNOT = '+'
 		private const val HORIZONTAL_BORDER = '-'
 		private const val VERTICAL_BORDER = '|'
@@ -111,9 +113,11 @@ internal class PrettyPrinter private constructor(private val out: StringBuilder 
 			return s.padEnd(n)
 		}
 
-		private inline fun safeGet(array: Array<out Any?>,
-		                           index: Int,
-		                           defaultValue: String = DEFAULT_AS_NULL): String {
+		private fun safeGet(
+			array: Array<out Any?>,
+			index: Int,
+			defaultValue: String = DEFAULT_AS_NULL
+		): String {
 			return array.getOrNull(index)?.toString() ?: defaultValue
 		}
 

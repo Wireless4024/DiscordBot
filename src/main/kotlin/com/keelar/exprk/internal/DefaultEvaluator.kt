@@ -127,12 +127,14 @@ internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evalua
 	}
 
 	companion object {
+
 		/* NOT NULLABLE constants kotlin will check this at single time */
 		@JvmField val ZERO: BigDecimal = BigDecimal.ZERO
 		@JvmField val ONE: BigDecimal = BigDecimal.ONE
 		@JvmField val IZERO: BigInteger = BigInteger.ZERO
 		@JvmField val IONE: BigInteger = BigInteger.ONE
 
+		@Suppress("NOTHING_TO_INLINE")
 		inline fun BigDecimal(boolean: Boolean) = if (boolean) ONE else ZERO
 
 		@JvmStatic

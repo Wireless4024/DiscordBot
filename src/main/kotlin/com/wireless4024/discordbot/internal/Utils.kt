@@ -4,7 +4,6 @@ import com.sedmelluq.lava.common.tools.DaemonThreadFactory
 import com.wireless4024.discordbot.command.string.regex
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import okhttp3.OkHttpClient
 import java.awt.GraphicsEnvironment
 import java.net.HttpURLConnection
 import java.net.URL
@@ -26,19 +25,20 @@ class Utils {
 		val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), ThreadFactory)
 		@JvmStatic
 		val scheduleexecutor = Executors.newScheduledThreadPool(1, ThreadFactory)
+
 		@JvmStatic
 		val logger: Logger = Logger.getLogger(Property.LOGGER_NAME)
-		@JvmStatic
-		val HTTPClient = OkHttpClient()
+
 		@JvmStatic
 		val URL_Regex = Pattern.compile(
 			"^(http://www\\.|https://www\\.|http://|https://)?[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?\$"
 		)
+
 		@JvmStatic
 		val word = Regex("(?=\\S)[^'\\s]*(?:'[^\\\\']*(?:\\\\[\\s\\S][^\\\\']*)*'[^'\\s]*)*")
 
-		@JvmStatic
-		val globalEvent = Handler()
+		/*@JvmStatic
+		val globalEvent = Handler()*/
 
 		@JvmStatic
 		fun split(str: String) = word.findAll(str).map {
@@ -51,7 +51,7 @@ class Utils {
 
 		@JvmStatic
 		fun <T> execute(timeout: Long, unit: TimeUnit, callback: Callable<T?>): T? {
-			val ex = Executors.newSingleThreadExecutor()
+			val ex = executor
 			return try {
 				ex.submit(callback).get(timeout, unit)
 			} catch (e: TimeoutException) {
@@ -59,7 +59,7 @@ class Utils {
 			} catch (e: Exception) {
 				throw java.lang.RuntimeException(e)
 			} finally {
-				ex.shutdown()
+				//ex.shutdown()
 			}
 		}
 
@@ -163,7 +163,7 @@ class Utils {
 		fun error(message: String) {
 			System.err.println(message)
 			if (!GraphicsEnvironment.isHeadless()) {
-				val opt = JOptionPane.showConfirmDialog(
+				JOptionPane.showConfirmDialog(
 					JFrame(),
 					message,
 					"Error!",

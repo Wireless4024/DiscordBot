@@ -10,9 +10,10 @@ import java.io.InputStream
 import java.net.URL
 import java.net.URLEncoder
 import java.util.*
+import java.util.Map.Entry
 import kotlin.math.absoluteValue
 
-class StandardLib {
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN") class StandardLib {
 
 	private val trim = Regex("[\r\n\t]+")
 	private val trims = Regex("\\s+")
@@ -89,44 +90,44 @@ class StandardLib {
 
 	private fun toString(value: Any?, replaceFunctionWithNull: Boolean = false): String {
 		return when (value) {
-			null                         -> "null"
-			is java.util.Map.Entry<*, *> -> toQuotedString(value.key) + ":" + toQuotedString(value.value)
-			is Array<*>                  -> deepToString(value)
-			is NativeArray               -> deepToString(value.toArray())
-			is BaseFunction              -> {
+			null -> "null"
+			is Entry<*, *> -> toQuotedString(value.key) + ":" + toQuotedString(value.value)
+			is Array<*> -> deepToString(value)
+			is NativeArray -> deepToString(value.toArray())
+			is BaseFunction -> {
 				if (replaceFunctionWithNull) "null"
 				else trim(Context.enter().decompileFunction(value, 0))
 			}
-			is NativeObject              -> toJSON(value, replaceFunctionWithNull)
-			is java.lang.Number          -> {
-				val double = value.doubleValue()
+			is NativeObject -> toJSON(value, replaceFunctionWithNull)
+			is Number -> {
+				val double = value.toDouble()
 				val long = double.toLong()
-				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.longValue().toString()
+				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.toLong().toString()
 				else value.toString()
 			}
-			is NativeJavaObject          -> NativeJavaObject::class.java.getDeclaredField("javaObject").also {
+			is NativeJavaObject -> NativeJavaObject::class.java.getDeclaredField("javaObject").also {
 				it.isAccessible = true
 			}
 				.get(value).toString()
-			else                         -> value.toString()
+			else                -> value.toString()
 		}
 	}
 
 	private fun toQuotedString(value: Any?, replaceFunctionWithNull: Boolean = false): String {
 		return when (value) {
-			null                -> "null"
-			is Boolean          -> value.toString()
-			is java.lang.Number -> {
-				val double = value.doubleValue()
+			null -> "null"
+			is Boolean -> value.toString()
+			is Number -> {
+				val double = value.toDouble()
 				val long = double.toLong()
-				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.longValue().toString()
+				if (double.absoluteValue <= 9007199254740991.0 && (double - long) <= 0.0) value.toLong().toString()
 				else value.toString()
 			}
-			is BaseFunction     -> {
+			is BaseFunction -> {
 				if (replaceFunctionWithNull) "null"
 				else trim(Context.enter().decompileFunction(value, 0))
 			}
-			else                -> quote(toString(value))
+			else            -> quote(toString(value))
 		}
 	}
 

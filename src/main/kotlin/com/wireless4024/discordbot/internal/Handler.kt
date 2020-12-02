@@ -13,6 +13,12 @@ import java.util.concurrent.TimeUnit.SECONDS
 import kotlinx.coroutines.launch as launch1
 
 class Handler : ListenerAdapter() {
+	companion object {
+
+		@JvmField
+		val instance = Handler()
+	}
+
 	private fun Member.getFullName(): String {
 		return if (this.nickname != null) "${this.nickname}(${this.user.name})" else this.user.name
 	}

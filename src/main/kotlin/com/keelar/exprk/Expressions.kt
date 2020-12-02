@@ -194,12 +194,12 @@ class Expressions @JvmOverloads constructor(
 
 		evaluator.addFunction("min") {
 			if (it.isEmpty()) throw ExpressionException("min requires at least one argument")
-			it.min()!!
+			it.minOrNull()!!
 		}
 
 		evaluator.addFunction("max") {
 			if (it.isEmpty()) throw ExpressionException("max requires at least one argument")
-			it.max()!!
+			it.maxOrNull()!!
 		}
 
 		evaluator.addFunction("if") {

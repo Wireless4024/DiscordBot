@@ -38,9 +38,9 @@ internal class ExtendedScanner(
 			'\t' -> {
 				// Ignore whitespace.
 			}
-			'+'  -> addToken(PLUS)
-			'-'  -> addToken(MINUS)
-			'*'  ->
+			'+' -> addToken(PLUS)
+			'-' -> addToken(MINUS)
+			'*' ->
 				if (match('*'))
 					if (match('*'))
 						if (match('*')) {
@@ -48,11 +48,17 @@ internal class ExtendedScanner(
 							while (match('*')) counts += 1
 							addToken(`STARRRRRR!`, "*".repeat(counts))
 						} else addToken(CUBE, "***")
-					else addToken(EXPONENT, "**")
+					else {
+						if (match('[')) {
+							addToken(LIST_UNPACK)
+							addToken(LIST_START)
+						} else
+							addToken(EXPONENT, "**")
+					}
 				else addToken(STAR)
-			'/'  -> if (match('/')) addToken(DOUBLE_SLASH, "//") else addToken(SLASH)
-			'%'  -> addToken(MODULO)
-			'^'  -> addToken(XOR, "^")
+			'/' -> if (match('/')) addToken(DOUBLE_SLASH, "//") else addToken(SLASH)
+			'%' -> addToken(MODULO)
+			'^' -> addToken(XOR, "^")
 			/*'r'  -> if (match('o'))
 				when {
 					match('r') -> addToken(ROR, "ror")
@@ -61,29 +67,31 @@ internal class ExtendedScanner(
 				}
 			else invalidToken(c)
 			*/
-			'~'  -> when {
+			'~' -> when {
 				match('&') -> addToken(NAND, "~&")
 				match('|') -> addToken(NOR, "~|")
 				match('^') -> addToken(NXOR, "~^")
 				else       -> addToken(NOT)
 			}
-			'='  -> if (match('=')) addToken(EQUAL_EQUAL) else addToken(ASSIGN)
-			'!'  -> if (match('=')) addToken(NOT_EQUAL) else Scanner.invalidToken(c)
-			'>'  -> when {
+			'=' -> if (match('=')) addToken(EQUAL_EQUAL) else addToken(ASSIGN)
+			'!' -> if (match('=')) addToken(NOT_EQUAL) else Scanner.invalidToken(c)
+			'>' -> when {
 				match('=') -> addToken(GREATER_EQUAL)
 				match('>') -> addToken(SHIFT_RIGHT, ">>")
 				else       -> addToken(GREATER)
 			}
-			'<'  -> when {
+			'<' -> when {
 				match('=') -> addToken(LESS_EQUAL)
 				match('<') -> addToken(SHIFT_LEFT, "<<")
 				else       -> addToken(LESS)
 			}
-			'|'  -> if (match('|')) addToken(BAR_BAR) else addToken(OR, "|")
-			'&'  -> if (match('&')) addToken(AMP_AMP) else addToken(AND, "&")
-			','  -> addToken(COMMA)
-			'('  -> addToken(LEFT_PAREN)
-			')'  -> addToken(RIGHT_PAREN)
+			'|' -> if (match('|')) addToken(BAR_BAR) else addToken(OR, "|")
+			'&' -> if (match('&')) addToken(AMP_AMP) else addToken(AND, "&")
+			',' -> addToken(COMMA)
+			'(' -> addToken(LEFT_PAREN)
+			')' -> addToken(RIGHT_PAREN)
+			'[' -> addToken(LIST_START)
+			']' -> addToken(LIST_END)
 			else -> {
 				when {
 					c.isDigit()       -> number()

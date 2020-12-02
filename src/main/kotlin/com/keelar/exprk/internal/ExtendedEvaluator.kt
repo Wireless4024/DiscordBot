@@ -18,6 +18,7 @@ import java.math.RoundingMode.FLOOR
 internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evaluator {
 
 	companion object {
+
 		@JvmField
 		internal val ConstantVariable = arrayOf("pi", "e")
 	}
@@ -25,7 +26,7 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 	override var context: MathContext = MathContext(scale, roundingMode)
 
 	override val variables: HashMap<String, BigDecimal> = hashMapOf()
-	private val functions: MutableMap<String, (List<BigDecimal>) -> BigDecimal> = mutableMapOf()
+	private val functions: MutableMap<String, (BigDecimalList) -> BigDecimalList> = mutableMapOf()
 
 	override fun define0(name: String, value: BigDecimal, override: Boolean) {
 		if (name in ConstantVariable && !override)
@@ -53,8 +54,19 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 		name: String,
 		function: (arguments: List<BigDecimal>) -> BigDecimal
 	): ExprVisitor<BigDecimal> {
+
+		addFunctionL(name) { v: BigDecimalList -> BigDecimalList.of(function(v)) }
+
+		return this
+	}
+
+	fun addFunctionL(
+		name: String,
+		function: (arguments: BigDecimalList) -> BigDecimalList
+	): ExprVisitor<BigDecimal> {
 		if (functions.containsKey(name.toLowerCase()))
 			throw UnsupportedOperationException("function $name already existed")
+
 		functions += name.toLowerCase() to function
 
 		return this
@@ -90,30 +102,30 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 		val right = eval(expr.right)
 
 		return when (expr.operator.type) {
-			PLUS          -> left + right
-			MINUS         -> left - right
-			STAR          -> left * right
-			SLASH         -> left.divide(right, context)
-			DOUBLE_SLASH  -> left.divide(right, context).setScale(0, FLOOR)
-			MODULO        -> left.remainder(right, context)
-			EXPONENT      -> left pow right
-			EQUAL_EQUAL   -> BigDecimal(left == right)
-			NOT_EQUAL     -> BigDecimal(left != right)
-			GREATER       -> BigDecimal(left > right)
+			PLUS -> left + right
+			MINUS -> left - right
+			STAR -> left * right
+			SLASH -> left.divide(right, context)
+			DOUBLE_SLASH -> left.divide(right, context).setScale(0, FLOOR)
+			MODULO -> left.remainder(right, context)
+			EXPONENT -> left pow right
+			EQUAL_EQUAL -> BigDecimal(left == right)
+			NOT_EQUAL -> BigDecimal(left != right)
+			GREATER -> BigDecimal(left > right)
 			GREATER_EQUAL -> BigDecimal(left >= right)
-			LESS          -> BigDecimal(left < right)
-			LESS_EQUAL    -> BigDecimal(left <= right)
+			LESS -> BigDecimal(left < right)
+			LESS_EQUAL -> BigDecimal(left <= right)
 
 			// bitwise operator
-			SHIFT_LEFT    -> left shl right
-			SHIFT_RIGHT   -> left shr right
-			AND           -> left and right
-			OR            -> left or right
-			XOR           -> left xor right
-			NAND          -> left nand right
-			NOR           -> left nor right
-			NXOR          -> left nxor right
-			ROL           -> left rol right
+			SHIFT_LEFT -> left shl right
+			SHIFT_RIGHT -> left shr right
+			AND -> left and right
+			OR -> left or right
+			XOR -> left xor right
+			NAND -> left nand right
+			NOR -> left nor right
+			NXOR -> left nxor right
+			ROL -> left rol right
 
 			else          -> throw ExpressionException(
 				"Invalid binary operator '${expr.operator.lexeme}'"
@@ -176,16 +188,16 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 
 		return when (expr.operator.type) {
 			MINUS -> right.negate()
-			NOT   -> BigDecimal(right.toBigInteger().not())
+			NOT -> BigDecimal(right.toBigInteger().not())
 			else  -> throw ExpressionException("Invalid unary operator")
 		}
 	}
 
 	override fun visitCallExpr(expr: CallExpr): BigDecimal {
 		val name = expr.name
-		val function = functions[name.toLowerCase()] ?: Evaluator.EmptyFunction
+		val function: (BigDecimalList) -> BigDecimalList = functions[name.toLowerCase()] ?: Evaluator.EmptyFunctionList
 
-		return function(expr.arguments.map { eval(it) })
+		return function(BigDecimalList.of(expr.arguments.map { eval(it) })).getBigDecimal()
 	}
 
 	override fun visitLiteralExpr(expr: LiteralExpr): BigDecimal {

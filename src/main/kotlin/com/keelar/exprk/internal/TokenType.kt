@@ -44,6 +44,11 @@ internal enum class TokenType {
 	LEFT_PAREN,
 	RIGHT_PAREN,
 
+	// List support
+	LIST_UNPACK,
+	LIST_START,
+	LIST_END,
+
 	// Literals
 	NUMBER,
 	IDENTIFIER,
