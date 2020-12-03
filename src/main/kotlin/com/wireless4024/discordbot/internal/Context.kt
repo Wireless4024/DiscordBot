@@ -5,7 +5,7 @@ class Context(val name: String,
               val whenExit: (MessageEvent) -> Unit) {
 
 	private var tries: Int = 0
-	operator fun invoke(evt: MessageEvent): Boolean {
+	suspend operator fun invoke(evt: MessageEvent): Boolean {
 		val ev = evt.asRaw()
 		if (tries > 4) {
 			ev.reply = "context failed $tries times exiting"

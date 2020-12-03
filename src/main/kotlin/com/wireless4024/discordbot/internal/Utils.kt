@@ -2,6 +2,7 @@ package com.wireless4024.discordbot.internal
 
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory
 import com.wireless4024.discordbot.command.string.regex
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.awt.GraphicsEnvironment
@@ -19,10 +20,13 @@ import kotlin.system.exitProcess
 
 class Utils {
 	companion object {
+
 		@JvmStatic
 		private val ThreadFactory: ThreadFactory = DaemonThreadFactory("bot")
+
 		@JvmStatic
 		val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), ThreadFactory)
+
 		@JvmStatic
 		val scheduleexecutor = Executors.newScheduledThreadPool(1, ThreadFactory)
 
@@ -65,12 +69,8 @@ class Utils {
 
 		@JvmStatic
 		fun log(msg: Any?, level: Level = Level.INFO, deep: Int = 0) {
-			logger.logp(
-				level,
-				Thread.currentThread().stackTrace[3 + deep].className,
-				Thread.currentThread().stackTrace[3 + deep].methodName,
-				"@${Date()}\n" + msg.toString()
-			)
+			val stack = Thread.currentThread().stackTrace.run { get((3 + deep).coerceIn(0 until size)) }
+			logger.logp(level, stack.className, stack.methodName, "@${Date()}\n" + msg.toString())
 		}
 
 		@JvmStatic
@@ -174,17 +174,20 @@ class Utils {
 			exitProcess(-1)
 		}
 
-		fun consume(event: MessageReceivedEvent?, bg: Boolean = true) {
-			if (bg)
+		suspend fun consume(event: MessageReceivedEvent?, bg: Boolean = true) {
+			if (bg) {
 				Property.ApplicationScope.launch {
 					if (event != null)
 						try {
-							if (event.responseNumber != -1L)
-								event.message.delete().completeAfter(Property.LONG_TIMEOUT, SECONDS)
+							if (event.responseNumber != -1L) {
+								// better with coroutines
+								delay(Property.LONG_TIMEOUT_MILLI)
+								event.message.delete().submit()
+							}
 						} catch (e: Exception) {
 						}
 				}
-			else {
+			} else {
 				if (event != null)
 					try {
 						if (event.responseNumber != -1L)

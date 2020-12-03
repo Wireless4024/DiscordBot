@@ -2,13 +2,13 @@ package com.wireless4024.discordbot.internal
 
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.concurrent.TimeUnit.SECONDS
 
 open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean = false) {
+
 	/**
 	 * get original [MessageReceivedEvent] object from JDA
 	 * @see net.dv8tion.jda.api.hooks.ListenerAdapter.onMessageReceived
@@ -49,9 +49,13 @@ open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean =
 	 * @see MessageChannel.sendMessage
 	 */
 	var reply: Any? = null
-		set(text) = this.reply(text, deep = 1)
+		set(text) {
+			Property.ApplicationScope.launch { reply(text, deep = 1) }
+		}
 	var permreply: Any? = null
-		set(text) = this.reply(text, true)
+		set(text) {
+			Property.ApplicationScope.launch { reply(text, true) }
+		}
 	open var msg = if (raw) this.e!!.message.contentDisplay else
 		Utils.getParameter(this.e!!.message.contentDisplay.trim('`', ' '))
 	val guild
@@ -64,19 +68,15 @@ open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean =
 
 	fun asRaw(): MessageEvent = MessageEvent(e, true)
 
-	fun consume() = Utils.consume(ev)
+	suspend fun consume() = Utils.consume(ev)
 
-	open fun reply(text: Any?, permanent: Boolean = false, deep: Int = 0) {
-		runBlocking {
-			launch {
-				Utils.log("-> [reply]\t'$text'", deep = 11 + deep)
-				ch.send(text) {
-					if (!permanent) {
-						try {
-							it.delete().queueAfter(Property.LONG_TIMEOUT, SECONDS, {}, {})
-						} catch (e: Exception) {
-						}
-					}
+	open suspend fun reply(text: Any?, permanent: Boolean = false, deep: Int = 0) {
+		Utils.log("-> [reply]\t'$text'", deep = 11 + deep)
+		ch.send(text) {
+			if (!permanent) {
+				try {
+					it.delete().queueAfter(Property.LONG_TIMEOUT, SECONDS, {}, {})
+				} catch (e: Exception) {
 				}
 			}
 		}
@@ -119,9 +119,10 @@ open class MessageEvent(private val e: MessageReceivedEvent?, val raw: Boolean =
 }
 
 class ConsoleEvent(private val message: String) : MessageEvent(null) {
+
 	override var msg: String = this.message
 
-	override fun reply(text: Any?, permanent: Boolean, deep: Int) {
+	override suspend fun reply(text: Any?, permanent: Boolean, deep: Int) {
 		if (text != null && text.toString().isNotBlank()) print(text)
 	}
 

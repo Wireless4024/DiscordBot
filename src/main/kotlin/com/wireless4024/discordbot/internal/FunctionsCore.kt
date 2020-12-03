@@ -11,17 +11,17 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
-fun MessageChannel.send(msg: Any?, success: (Message) -> Unit? = {}) {
-	if (msg == null) return
-	if (msg is MessageEmbed) {
-		this.sendMessage(msg).queue { success(it) }
-		return
-	}
-	if (msg is EmbedBuilder) {
-		this.sendMessage(msg.build()).queue { success(it) }
-		return
-	}
-	if (msg is Message) {
+ fun MessageChannel.send(msg: Any?, success: (Message) -> Unit? = {}) {
+	 if (msg == null) return
+	 if (msg is MessageEmbed) {
+		 this.sendMessage(msg).queue { success(it) }
+		 return
+	 }
+	 if (msg is EmbedBuilder) {
+		 this.sendMessage(msg.build()).queue { success(it) }
+		 return
+	 }
+	 if (msg is Message) {
 		this.sendMessage(msg).queue { success(it) }
 		return
 	}

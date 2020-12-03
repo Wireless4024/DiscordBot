@@ -158,7 +158,8 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 		sqliteInstance = null
 	}
 
-	fun runContext(evt: MessageEvent): Boolean = context.containsKey(evt.ch.idLong) && context[evt.ch.idLong]!!(evt)
+	suspend fun runContext(evt: MessageEvent): Boolean =
+		context.containsKey(evt.ch.idLong) && context[evt.ch.idLong]!!(evt)
 
 	fun registerContext(name: String, id: Long, fnc: (MessageEvent) -> Any?, whenClosed: (MessageEvent) -> Unit = {}) {
 		this.context[id] = Context(name, fnc) { context.remove(id);whenClosed(it) }

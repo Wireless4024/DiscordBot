@@ -1,9 +1,13 @@
 package com.wireless4024.discordbot.command
 
-import com.wireless4024.discordbot.internal.*
+import com.wireless4024.discordbot.internal.ICommandBase
+import com.wireless4024.discordbot.internal.MessageEvent
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
+import com.wireless4024.discordbot.internal.SkipArguments
+import com.wireless4024.discordbot.internal.parseInt
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
+import java.util.concurrent.atomic.AtomicLong
 
 @SkipArguments
 class clean : ICommandBase {
@@ -16,10 +20,13 @@ class clean : ICommandBase {
 			return ""
 		event.configuration["clean"] = true
 		val limit = event.msg.parseInt() ?: 0
-		var cnt = 0
+		var cnt = AtomicLong()
+
+		val msg = event.ch.sendMessage("deleting message")
+
 		if (limit == 0)
-			event.ch.iterableHistory.forEach { m -> m.delete().complete().also { ++cnt } }.let {
-				event.ch.sendThenDelete("deleted $cnt messages")
+			event.ch.iterableHistory.forEach { m -> m.delete().queue() }.let {
+				msg.content("deleted ${cnt.incrementAndGet()}")
 				event.configuration["clean"] = false
 			}
 		else event.ch.iterableHistory.limit(limit + 1)
@@ -27,13 +34,16 @@ class clean : ICommandBase {
 			.drop(1)
 			.forEach { m ->
 				try {
-					m.delete().complete().also { ++cnt }
+					m.delete().queue()
 				} catch (e: Exception) {
 				}
 			}.let {
-				event.ch.sendThenDelete("deleted $cnt messages")
+				msg.content("deleted ${cnt.incrementAndGet()}")
 				event.configuration["clean"] = false
 			}
+		if (cnt.get() == 0L) {
+			msg.content("No message deleted")
+		}
 		return ""
 	}
 }

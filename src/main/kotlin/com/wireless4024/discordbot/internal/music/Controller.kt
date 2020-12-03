@@ -183,20 +183,22 @@ class Controller(val parent: ConfigurationCache) {
 					tracks.forEach { track ->
 						it.addField(
 							track.info.title + " " + track.info.uri,
-							"by: ${track.info.author} | duration: ${Utils.toReadableFormatTime(
-								track.info.length
-							)}", false
+							"by: ${track.info.author} | duration: ${
+								Utils.toReadableFormatTime(
+									track.info.length
+								)
+							}", false
 						)
 					}
 				}.build()
 			}
 
 			override fun noMatches() {
-				event.reply("Nothing found for $word")
+				ApplicationScope.launch { event.reply("Nothing found for $word") }
 			}
 
 			override fun loadFailed(throwable: FriendlyException) {
-				event.reply("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")")
+				ApplicationScope.launch { event.reply("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")") }
 			}
 		})
 	}
@@ -208,12 +210,12 @@ class Controller(val parent: ConfigurationCache) {
 		manager.loadItemOrdered(this, url, object : AudioLoadResultHandler {
 			override fun trackLoaded(track: AudioTrack) {
 				connect(parent.audioManager, event.member.voiceState?.channel)
-
-				if (scheduler.size() == 0 && player.playingTrack == null)
-					event.reply("now playing: ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)})")
-				else
-					event.reply("added ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)}) to queue")
-
+				ApplicationScope.launch {
+					if (scheduler.size() == 0 && player.playingTrack == null)
+						event.reply("now playing: ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)})")
+					else
+						event.reply("added ${track.info.title} (length ${Utils.toReadableFormatTime(track.duration)}) to queue")
+				}
 				scheduler.addToQueue(track)
 			}
 
@@ -240,11 +242,11 @@ class Controller(val parent: ConfigurationCache) {
 			}
 
 			override fun noMatches() {
-				event.reply("Nothing found for $url")
+				ApplicationScope.launch { event.reply("Nothing found for $url") }
 			}
 
 			override fun loadFailed(throwable: FriendlyException) {
-				event.reply("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")")
+				ApplicationScope.launch { event.reply("Failed with message: " + throwable.message + " (" + throwable.javaClass.simpleName + ")") }
 			}
 		})
 	}
