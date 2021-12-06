@@ -1,9 +1,11 @@
 package com.wireless4024.discordbot.command.string
 
+import com.wireless4024.discordbot.internal.Utils
 import com.wireless4024.discordbot.internal.*
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
+import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -21,27 +23,27 @@ class regex : ICommandBase {
 		@JvmStatic
 		fun regex(regex: String, operation: String, target: String, replacement: String? = null): Any {
 			return Utils.execute(5, SECONDS, Callable {
-				try {
-					when (operation.toLowerCase()) {
-						"find"          -> regex.toRegex().find(target)?.value ?: ""
-						"in", "findall" -> regex.toRegex().findAll(target).map { it.value }.joinToString(", ", "[", "]")
-						"~", "match"    -> regex.toRegex().containsMatchIn(target)
-						"~=", "matchs"  -> regex.toRegex().matches(target)
-						"=", "replace"  -> if (replacement == null) with(split(target)) {
-							regex.toRegex().replace(this[0], this[1])
-						} else regex.toRegex().replace(target, replacement)
-						"replacefirst"  -> if (replacement == null) with(split(target)) {
-							regex.toRegex().replaceFirst(this[0], this[1])
-						} else regex.toRegex().replaceFirst(target, replacement)
-						"split"         -> if (replacement == null) with(split(target)) {
-							if (this[1].parseInt() == null) regex.toRegex().split(target)
-							else regex.toRegex().split(this[0], this[1].parseInt() ?: 0)
-						} else regex.toRegex().split(target, replacement.parseInt() ?: 0)
-						else            -> "invalid operation"
-					}
-				} catch (e: Throwable) {
-					e.cause?.message ?: e.message ?: e
-				}
+                try {
+                    when (operation.lowercase(Locale.getDefault())) {
+                        "find" -> regex.toRegex().find(target)?.value ?: ""
+                        "in", "findall" -> regex.toRegex().findAll(target).map { it.value }.joinToString(", ", "[", "]")
+                        "~", "match" -> regex.toRegex().containsMatchIn(target)
+                        "~=", "matchs" -> regex.toRegex().matches(target)
+                        "=", "replace" -> if (replacement == null) with(split(target)) {
+                            regex.toRegex().replace(this[0], this[1])
+                        } else regex.toRegex().replace(target, replacement)
+                        "replacefirst" -> if (replacement == null) with(split(target)) {
+                            regex.toRegex().replaceFirst(this[0], this[1])
+                        } else regex.toRegex().replaceFirst(target, replacement)
+                        "split" -> if (replacement == null) with(split(target)) {
+                            if (this[1].parseInt() == null) regex.toRegex().split(target)
+                            else regex.toRegex().split(this[0], this[1].parseInt() ?: 0)
+                        } else regex.toRegex().split(target, replacement.parseInt() ?: 0)
+                        else -> "invalid operation"
+                    }
+                } catch (e: Throwable) {
+                    e.cause?.message ?: e.message ?: e
+                }
 			}) ?: "execution timeout"
 
 		}

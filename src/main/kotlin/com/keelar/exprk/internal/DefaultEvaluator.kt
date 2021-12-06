@@ -7,6 +7,8 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import java.util.*
+import kotlin.collections.HashMap
 
 internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evaluator {
 
@@ -24,7 +26,7 @@ internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evalua
 	override fun define0(name: String, value: BigDecimal) = define0(name, value, false)
 
 	override fun define0(name: String, value: Expr): Evaluator {
-		define0(name.toLowerCase(), eval(value))
+        define0(name.lowercase(Locale.getDefault()), eval(value))
 
 		return this
 	}
@@ -41,10 +43,10 @@ internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evalua
 	}
 
 	override fun addFunction(name: String, function: (List<BigDecimal>) -> BigDecimal): ExprVisitor<BigDecimal> {
-		functions += name.toLowerCase() to function
+        functions += name.lowercase(Locale.getDefault()) to function
 
-		return this
-	}
+        return this
+    }
 
 	override fun eval(expr: Expr): BigDecimal {
 		return expr.accept(this)
@@ -107,7 +109,7 @@ internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evalua
 
 	override fun visitCallExpr(expr: CallExpr): BigDecimal {
 		val name = expr.name
-		val function = functions[name.toLowerCase()] ?: Evaluator.EmptyFunction
+		val function = functions[name.lowercase(Locale.getDefault())] ?: Evaluator.EmptyFunction
 
 		return function(expr.arguments.map { eval(it) })
 	}
@@ -119,7 +121,7 @@ internal class DefaultEvaluator(scale: Int, roundingMode: RoundingMode) : Evalua
 	override fun visitVariableExpr(expr: VariableExpr): BigDecimal {
 		val name = expr.name.lexeme
 
-		return variables[name.toLowerCase()] ?: ZERO
+		return variables[name.lowercase(Locale.getDefault())] ?: ZERO
 	}
 
 	override fun visitGroupingExpr(expr: GroupingExpr): BigDecimal {

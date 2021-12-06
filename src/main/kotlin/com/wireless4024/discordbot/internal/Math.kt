@@ -7,7 +7,7 @@ import java.io.EOFException
 import java.math.BigDecimal
 
 class functionx {
-	private val ev = Expressions(false, 64)
+	private val ev = Expressions(true, 64)
 	/* synchronized seem not enough to lock an Expression */
 	private val lock = java.util.concurrent.locks.ReentrantLock()
 

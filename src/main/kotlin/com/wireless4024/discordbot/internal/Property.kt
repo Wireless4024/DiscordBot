@@ -78,7 +78,7 @@ interface Property {
 						else                      -> when (permission) {
 							permission and ANY           -> true
 							permission and MEMBER        ->
-								user.isOwner || user.hasPermission(net.dv8tion.jda.api.Permission.MESSAGE_WRITE)
+								user.isOwner || user.hasPermission(net.dv8tion.jda.api.Permission.MESSAGE_SEND)
 							permission and ADMINISTRATOR ->
 								user.isOwner || user.hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)
 							permission and OWNER         -> user.isOwner

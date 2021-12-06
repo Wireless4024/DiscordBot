@@ -1,3 +1,5 @@
+@file:JvmName("Utils")
+
 package com.wireless4024.discordbot.internal
 
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory

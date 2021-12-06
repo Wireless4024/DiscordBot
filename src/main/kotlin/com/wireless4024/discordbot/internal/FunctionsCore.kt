@@ -14,11 +14,11 @@ import java.util.concurrent.TimeUnit
  fun MessageChannel.send(msg: Any?, success: (Message) -> Unit? = {}) {
 	 if (msg == null) return
 	 if (msg is MessageEmbed) {
-		 this.sendMessage(msg).queue { success(it) }
+		 this.sendMessageEmbeds(msg).queue { success(it) }
 		 return
 	 }
 	 if (msg is EmbedBuilder) {
-		 this.sendMessage(msg.build()).queue { success(it) }
+		 this.sendMessageEmbeds(msg.build()).queue { success(it) }
 		 return
 	 }
 	 if (msg is Message) {

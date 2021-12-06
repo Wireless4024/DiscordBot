@@ -14,6 +14,8 @@ import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
 import java.math.RoundingMode.FLOOR
+import java.util.*
+import kotlin.collections.HashMap
 
 internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evaluator {
 
@@ -37,7 +39,7 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 	override fun define0(name: String, value: BigDecimal) = define0(name, value, false)
 
 	override fun define0(name: String, expr: Expr): Evaluator {
-		define0(name.toLowerCase(), eval(expr))
+		define0(name.lowercase(Locale.getDefault()), eval(expr))
 
 		return this
 	}
@@ -64,10 +66,10 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 		name: String,
 		function: (arguments: BigDecimalList) -> BigDecimalList
 	): ExprVisitor<BigDecimal> {
-		if (functions.containsKey(name.toLowerCase()))
+		if (functions.containsKey(name.lowercase(Locale.getDefault())))
 			throw UnsupportedOperationException("function $name already existed")
 
-		functions += name.toLowerCase() to function
+		functions += name.lowercase(Locale.getDefault()) to function
 
 		return this
 	}
@@ -195,9 +197,10 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 
 	override fun visitCallExpr(expr: CallExpr): BigDecimal {
 		val name = expr.name
-		val function: (BigDecimalList) -> BigDecimalList = functions[name.toLowerCase()] ?: Evaluator.EmptyFunctionList
+		val function: (BigDecimalList) -> BigDecimalList =
+			functions[name.lowercase(Locale.getDefault())] ?: Evaluator.EmptyFunctionList
 
-		return function(BigDecimalList.of(expr.arguments.map { eval(it) })).getBigDecimal()
+		return function(BigDecimalList.of(expr.arguments.map { eval(it) })).sumOf { it }
 	}
 
 	override fun visitLiteralExpr(expr: LiteralExpr): BigDecimal {
@@ -207,7 +210,7 @@ internal class ExtendedEvaluator(scale: Int, roundingMode: RoundingMode) : Evalu
 	override fun visitVariableExpr(expr: VariableExpr): BigDecimal {
 		val name = expr.name.lexeme
 
-		return variables[name.toLowerCase()] ?: ZERO
+		return variables[name.lowercase(Locale.getDefault())] ?: ZERO
 	}
 
 	override fun visitGroupingExpr(expr: GroupingExpr): BigDecimal {

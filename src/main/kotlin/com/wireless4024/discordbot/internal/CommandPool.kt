@@ -4,6 +4,7 @@ import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Options
 import org.reflections.Reflections
 import java.lang.reflect.Method
+import java.util.*
 
 class CommandPool(path: String = "com.wireless4024.discordbot.command") {
 	private var commands: MutableMap<String, Invokable> = mutableMapOf()
@@ -15,24 +16,24 @@ class CommandPool(path: String = "com.wireless4024.discordbot.command") {
 				run {
 					val inst = c.getDeclaredConstructor()
 						.newInstance()
-					commands[inst.name().toLowerCase()] = InvokableInstance(inst)
+                    commands[inst.name().lowercase(Locale.getDefault())] = InvokableInstance(inst)
 					c.declaredMethods.filter { method ->
 						method.isAnnotationPresent(
 							Command::class.java
 						)
 					}.forEach { method ->
 						method.isAccessible = true
-						if (!commands.containsKey(method.name.toLowerCase()))
-							commands[method.name.toLowerCase()] = InvokableMethod(
-								method, inst
-							)
+						if (!commands.containsKey(method.name.lowercase(Locale.getDefault())))
+                            commands[method.name.lowercase(Locale.getDefault())] = InvokableMethod(
+                                method, inst
+                            )
 					}
 				}
 			}
 	}
 
 	fun get(): MutableCollection<Invokable> = commands.values
-	operator fun get(string: String): Invokable? = commands[string.toLowerCase()]
+    operator fun get(string: String): Invokable? = commands[string.lowercase(Locale.getDefault())]
 	override fun toString(): String = commands.toString()
 }
 

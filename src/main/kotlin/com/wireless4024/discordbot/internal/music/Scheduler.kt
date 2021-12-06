@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import com.wireless4024.discordbot.internal.CommandError
 import com.wireless4024.discordbot.internal.music.Repeat.*
+import net.dv8tion.jda.api.audio.hooks.ConnectionStatus
 import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.concurrent.BlockingDeque
@@ -112,7 +113,7 @@ class Scheduler(
 		lastTrack?.run { this@Scheduler.lastTrack = this }
 
 		val am = parent.parent.audioManager
-		player.isPaused = (am.connectedChannel?.members?.size ?: 2) < 2 && !am.isAttemptingToConnect
+		player.isPaused = (am.connectedChannel?.members?.size ?: 2) < 2 && !am.isConnected
 
 		if (repeat != SINGLE || lastTrack == null) {
 			if (repeat == ALL && lastTrack != null)

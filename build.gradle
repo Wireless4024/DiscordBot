@@ -1,11 +1,11 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version "1.4.20"
+    id 'org.jetbrains.kotlin.jvm' version "1.6.0"
 }
 
 // java discord library versions
-def jda = '4.2.0_222'
+def jda = '5.0.0-alpha.2'
 // lava player version
-def lava = '1.3.63'
+def lava = '1.3.78'
 // big-math version
 def bigmath = '2.3.0'
 // reflections version
@@ -14,77 +14,84 @@ def reflection = '0.9.12'
 def ccli = '1.4'
 
 group 'com.wireless4024'
-version '2.1'
+version '2.2'
 
-sourceCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
-	mavenCentral()
-	jcenter()
+    mavenCentral()
+    jcenter()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
 }
 
 dependencies {
-	/* JDA core of this project */
-	implementation "net.dv8tion:JDA:${jda}"
-	/* music player lib */
-	implementation "com.sedmelluq:lavaplayer:${lava}"
-	implementation "com.sedmelluq:jda-nas:1.1.0"
-	/* BigMath lib for calculation */
-	implementation "ch.obermuhlner:big-math:${bigmath}"
-	/* JVM's reflections */
-	implementation "org.reflections:reflections:${reflection}"
-	implementation "com.google.guava:guava:30.0-jre"
-	/* cli parser */
-	implementation "commons-cli:commons-cli:${ccli}"
-	/* mongodb driver */
-	implementation "org.litote.kmongo:kmongo-coroutine:4.2.2"
-	/* youtube api v3 */
-	implementation "com.google.apis:google-api-services-youtube:v3-rev222-1.25.0"
-	//implementation "org.slf4j:slf4j-simple:2.0.0-alpha1"
+    /* JDA core of this project */
+    implementation "net.dv8tion:JDA:${jda}"
+    /* music player lib */
+    implementation "com.sedmelluq:lavaplayer:${lava}"
+    implementation "com.sedmelluq:jda-nas:1.1.0"
+    /* BigMath lib for calculation */
+    implementation "ch.obermuhlner:big-math:${bigmath}"
+    /* JVM's reflections */
+    implementation "org.reflections:reflections:${reflection}"
+    implementation "com.google.guava:guava:30.1.1-jre"
+    /* cli parser */
+    implementation "commons-cli:commons-cli:${ccli}"
+    /* mongodb driver */
+    implementation 'org.litote.kmongo:kmongo-coroutine:4.4.0'
+    /* youtube api v3 */
+    implementation 'com.google.apis:google-api-services-youtube:v3-rev20210828-1.32.1'
+    //implementation "org.slf4j:slf4j-simple:2.0.0-alpha1"
 
-	/* Kotlin Libs */
-	/*
-	implementation "org.jetbrains.kotlin:kotlin-script-util:1.3.50"
-	implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.50"
-	implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.3.50"
-	implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.3.50"
-	implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.50"*/
-	implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.20"
-	implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
-	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    /* Kotlin Libs */
+    /*
+    implementation "org.jetbrains.kotlin:kotlin-script-util:1.3.50"
+    implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.50"
+    implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.3.50"
+    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.3.50"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.50"*/
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
 
-	/* sqlite */
-	implementation "org.xerial:sqlite-jdbc:3.28.0"
+    /* sqlite */
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.2'
 
-	/* rhino javascript engine */
-	implementation "org.javadelight:delight-rhino-sandbox:0.0.13"
-	testCompile "junit:junit:4.12"
+    /* rhino javascript engine */
+    implementation 'org.javadelight:delight-rhino-sandbox:0.0.15'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
 
 task run(type: JavaExec) {
-	classpath sourceSets.main.runtimeClasspath
-	main = "Main"
+    classpath sourceSets.main.runtimeClasspath
+    main = "Main"
 }
 
 jar {
-	baseName += '-full'
-	destinationDirectory = file("$rootDir/jar")
-	from(configurations.runtimeClasspath.collect {
-		it.getName().endsWithAny(".jar", ".zip") ? zipTree(it) : it
-	}) {
-		exclude "META-INF/*.SF"
-		exclude "META-INF/*.RSA"
-		exclude "META-INF/MANIFEST.MF"
-		exclude "META-INF/LICENSE"
-	}
-	manifest {
-		attributes 'Main-Class': 'Main'
-	}
+    baseName += '-full'
+    destinationDirectory = file("$rootDir/jar")
+
+    duplicatesStrategy(DuplicatesStrategy.WARN)
+
+    from(configurations.runtimeClasspath.collect {
+        it.getName().endsWithAny(".jar", ".zip") ? zipTree(it) : it
+    }) {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.RSA"
+        exclude "META-INF/MANIFEST.MF"
+        exclude "META-INF/LICENSE"
+    }
+    manifest {
+        attributes 'Main-Class': 'Main'
+    }
 }
 
 compileKotlin {
-	kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 compileTestKotlin {
-	kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }

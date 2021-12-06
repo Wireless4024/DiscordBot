@@ -11,12 +11,14 @@ fun main() {
 	System.setProperty("idea.io.use.fallback", "true")
 	try {
 		Class.forName("com.wireless4024.discordbot.internal.Property")
+		Class.forName("com.wireless4024.discordbot.internal.Utils")
 		Property.JDA = JDABuilder.createDefault(Property.TOKEN)
 			//.setToken()
 			//.setAudioSendFactory(NativeAudioSendFactory())
 			.addEventListeners(Handler.instance)
 			.build()
 	} catch (e: Throwable) {
+		e.printStackTrace()
 		Utils.error(e.message ?: e.toString())
 		exitProcess(1)
 	}

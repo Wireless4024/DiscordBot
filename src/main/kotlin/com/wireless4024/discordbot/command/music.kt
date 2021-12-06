@@ -1,8 +1,10 @@
 package com.wireless4024.discordbot.command
 
+import com.wireless4024.discordbot.internal.Utils
 import com.wireless4024.discordbot.internal.*
 import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.entities.VoiceChannel
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
 
@@ -118,13 +120,14 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	@Command
 	@SkipArguments
 	fun previous(event: MessageEvent): String {
-		return event.musicController.previous(event.voiceChannel)?.let { "now playing : $it" } ?: ""
+		return event.musicController.previous(event.voiceChannel as VoiceChannel)?.let { "now playing : $it" } ?: ""
 	}
 
 	@Command
 	@SkipArguments
 	fun forward(event: MessageEvent): String {
-		return "now playing at ${Utils.toReadableFormatTime(
+		return "now playing at ${
+            Utils.toReadableFormatTime(
 			event.musicController.forward(
 				(event.msg.toIntOrNull() ?: 5) * 1000
 			)
@@ -134,7 +137,8 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	@Command
 	@SkipArguments
 	fun backward(event: MessageEvent): String {
-		return "now playing at ${Utils.toReadableFormatTime(
+		return "now playing at ${
+            Utils.toReadableFormatTime(
 			event.musicController.back((event.msg.toIntOrNull() ?: 5) * 1000)
 		)}"
 	}
@@ -142,7 +146,8 @@ remaining: `${Utils.toReadableFormatTime(playingInfo.length - player.position)}`
 	@Command
 	@SkipArguments
 	fun seek(event: MessageEvent): String {
-		return "now playing at ${Utils.toReadableFormatTime(
+		return "now playing at ${
+            Utils.toReadableFormatTime(
 			event.musicController.seek(
 				(event.msg.toLongOrNull() ?: 0) * 1000
 			)

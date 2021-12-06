@@ -6,6 +6,7 @@ import com.wireless4024.discordbot.internal.Property.Companion.Permission
 import com.wireless4024.discordbot.internal.SkipArguments
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.Option
+import java.util.*
 
 @SkipArguments
 class touppercase : ICommandBase {
@@ -21,9 +22,9 @@ class touppercase : ICommandBase {
 @SkipArguments
 class tolowercase : ICommandBase {
 
-	override fun invoke(args: CommandLine, event: MessageEvent): Any {
-		return event.msg.toLowerCase()
-	}
+    override fun invoke(args: CommandLine, event: MessageEvent): Any {
+        return event.msg.lowercase(Locale.getDefault())
+    }
 
 	override val options: List<Option> = listOf()
 	override val permission: Int = Permission.ANY

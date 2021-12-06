@@ -176,7 +176,8 @@ class ConfigurationCache private constructor(var guild: Guild, var lastEvent: Me
 	}
 
 	fun setRegion(where: String) {
-		guild.manager.setRegion(Region.fromKey(where).also { require(it != UNKNOWN) { "invalid region key" } })
+		TODO()
+		//guild.manager.setRegion(Region.fromKey(where).also { require(it != UNKNOWN) { "invalid region key" } })
 	}
 
 	val Regions = Region.values()
